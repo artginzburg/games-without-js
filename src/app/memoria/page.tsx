@@ -42,6 +42,7 @@ import {
   PageWrapper,
   ClockStatContainer,
 } from './page.styled';
+import { unstable_cache } from 'next/cache';
 
 export const metadata: Metadata = {
   title: texts.title,
@@ -77,7 +78,7 @@ export default async function Memory({
   const moves = searchParams.moves ? Number(searchParams.moves) : searchParamsDefaults.moves;
 
   const cardCount = boardSize ** 2;
-  const { cards, cardContentShuffled } = generateCardsAndContent(seed, cardCount);
+  const { cards, cardContentShuffled } = await generateCardsAndContent(seed, cardCount);
 
   const pendingIndexes = pendingString?.split(',').map(Number);
   const pendingCards = pendingIndexes?.map((pendingIndex) => cards[pendingIndex]);
@@ -311,7 +312,7 @@ function ClockStatStaticValues({ msPlayed }: { msPlayed: number }) {
 }
 
 /** Note: Caching this function would not yield any performance benefits until the cardCount is very large (much bigger then allowed for this game). Additionally, caching makes the first generation many times longer (when a seed is first encountered). */
-function generateCardsAndContent(seed: string, cardCount: number) {
+const generateCardsAndContent = unstable_cache(async (seed: string, cardCount: number) => {
   const halfCardCount = cardCount / 2;
 
   const cardsBase = [...Array(halfCardCount)].map((_val, id) => ({ id }));
@@ -326,7 +327,7 @@ function generateCardsAndContent(seed: string, cardCount: number) {
   const cardContentShuffled = deterministicShuffle(emojis, seed).slice(0, halfCardCount);
 
   return { cards, cardContentShuffled };
-}
+});
 
 type MemoryCard = {
   /** Unique to a pair of cards and unknown to the player */
