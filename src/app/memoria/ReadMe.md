@@ -4,6 +4,7 @@
 - [x] Rewrite all queries from strings to object literals
 - [ ] Add type annotations for queries
 - [ ] Rename `enabled` to `guessed`
+- [ ] Use `aria-label` or `title` to make all the Links accessible.
 
 ## Ideas
 
