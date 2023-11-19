@@ -1,4 +1,18 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {}
+const withLinaria = require('next-with-linaria');
 
-module.exports = nextConfig
+/** @type {import('next-with-linaria').LinariaConfig} */
+const nextConfig = {
+  experimental: {
+    typedRoutes: true,
+  },
+  images: {
+    remotePatterns: [
+      {
+        /** @see https://googlefonts.github.io/noto-emoji-animation/ */
+        hostname: 'fonts.gstatic.com',
+      },
+    ],
+  },
+};
+
+module.exports = withLinaria(nextConfig);

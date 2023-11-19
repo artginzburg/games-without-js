@@ -1,95 +1,67 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import Link from 'next/link';
+import { FaChessBoard, FaGithubAlt } from 'react-icons/fa6';
+
+import { texts as memoryGameTexts } from './memoria/data/texts';
+import {
+  Footer,
+  FooterLinks,
+  FutureGamesList,
+  FutureGamesSection,
+  GamesList,
+  Heading1,
+  Heading2,
+  MainContainer,
+  PageWrapper,
+  SmallSubtitle,
+  Subtitle,
+} from './page.styled';
 
 export default function Home() {
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    <PageWrapper>
+      <MainContainer>
+        <section>
+          <Heading1>Games without JS</Heading1>
+          <Subtitle>
+            No client-side JavaScript, relying purely on <span>SSR and CSS</span>. Disable JS in
+            your browser for an immersive experience
+          </Subtitle>
+        </section>
+        <article>
+          <GamesList>
+            <li>
+              <Link href={'/memoria'}>
+                <FaChessBoard /> {memoryGameTexts.title}{' '}
+                <span>· {memoryGameTexts.description}</span>
+              </Link>
+            </li>
+          </GamesList>
+          <FutureGamesSection>
+            <Heading2>Coming soon...</Heading2>
+            <FutureGamesList>
+              <li>Maze</li>
+              <li>Whack-a-mole</li>
+              <li>Sudoku</li>
+              <li>2048</li>
+            </FutureGamesList>
+          </FutureGamesSection>
+        </article>
+      </MainContainer>
+      <Footer>
+        <Subtitle>
+          Next time a conversation goes <span>{'"Why Next.js?"'}</span> — you know what to do.
+        </Subtitle>
+        <SmallSubtitle>
+          {
+            "Please don't ask how much it costs to host. It's an experiment, not a production technique"
+          }
+        </SmallSubtitle>
+        <FooterLinks>
+          <Link href="https://github.com/artginzburg/games-without-js">
+            <FaGithubAlt /> GitHub
+          </Link>
+        </FooterLinks>
+      </Footer>
+    </PageWrapper>
+  );
 }
