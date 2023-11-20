@@ -61,7 +61,7 @@ const searchParamsDefaults: Record<Extract<AllowedSearchParams, 'size' | 'moves'
   moves: 0,
 };
 
-export default async function Memory({
+export default function Memory({
   searchParams,
 }: {
   searchParams: Partial<Record<AllowedSearchParams, string>>;
