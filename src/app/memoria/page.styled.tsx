@@ -436,7 +436,6 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
     max-width: 100%;
     max-height: 400px;
     overflow-y: auto;
-    padding: ${cardsContainerPaddingRem}rem;
     margin-inline: ${cardsContainerPaddingRem}rem;
     background: linear-gradient(#fff, #ddd);
     color: #222;
@@ -446,6 +445,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
     transform: scale(0);
 
     &:first-child {
+      padding: ${cardsContainerPaddingRem}rem;
       > a {
         font-size: 2rem;
         border-radius: ${cardBorderRadiusRem}rem;
@@ -472,8 +472,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
       align-items: center;
       column-gap: ${gapBetweenSmallRelatedElementsRem * 2}rem;
 
-      padding: 0;
-      padding-block: 0.2rem;
+      padding-block: 0.15rem;
       padding-right: 0.2rem;
       padding-left: ${cardsContainerPaddingRem}rem;
 
