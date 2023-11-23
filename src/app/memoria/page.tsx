@@ -127,7 +127,12 @@ export default function Memory({
             moves={moves}
           />
           <RestartButtonContainer aria-disabled={!isGameStarted}>
-            <Link href={actionResetHref} scroll={false} tabIndex={!isGameStarted ? -1 : undefined}>
+            <Link
+              href={actionResetHref}
+              scroll={false}
+              tabIndex={!isGameStarted ? -1 : undefined}
+              accessKey={isGameStarted ? 'r' : undefined}
+            >
               <FaRepeat />
             </Link>
           </RestartButtonContainer>
@@ -177,7 +182,7 @@ export default function Memory({
         </GameBottomButtonsContainer>
       </GameContainer>
       <BackLinkContainer>
-        <Link href="/">
+        <Link href="/" accessKey="q">
           <FaArrowLeftLong />
           Games without JS
         </Link>
@@ -387,6 +392,7 @@ function GameBoardSizeButtons({
           })}`}
           scroll={false}
           tabIndex={isDecreaseButtonDisabled || isGameStarted ? -1 : undefined}
+          accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '-'}
         >
           -
         </Link>
@@ -401,6 +407,7 @@ function GameBoardSizeButtons({
           })}`}
           scroll={false}
           tabIndex={isIncreaseButtonDisabled || isGameStarted ? -1 : undefined}
+          accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '='}
         >
           +
         </Link>
