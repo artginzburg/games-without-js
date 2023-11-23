@@ -121,7 +121,11 @@ export default function Memory({
               <p>{Math.floor(moves + 1)}</p>
             </div>
           </MovesStatContainer>
-          <ClockStat currentStartedAt={currentStartedAt} isGameStarted={isGameStarted} />
+          <ClockStat
+            currentStartedAt={currentStartedAt}
+            isGameStarted={isGameStarted}
+            moves={moves}
+          />
           <RestartButtonContainer aria-disabled={!isGameStarted}>
             <Link href={actionResetHref} scroll={false} tabIndex={!isGameStarted ? -1 : undefined}>
               <FaRepeat />
@@ -265,36 +269,30 @@ function Card({
 }
 
 /**
- * BUG: the animation would get out of sync when JS is enabled, because Next.js updates the animation delay, but the animation itself stays the same (does not reset).
+ * Beware, cursed code: the animation would get out of sync when JS is enabled, because Next.js updates the animation delay, but the animation itself stays the same (does not reset).
  *
- * So I paused the animation altogether when JS is enabled.
- *
- * P.S. I made a clock that only works without JS. Just the sound of that phrase...
+ * When I first encountered this, I paused the animation altogether when JS is enabled.
+ * But now, I'm duplicating the animation instead (with no changes but the name), and alternating between the `animation-name`s based on a trigger (`animationTrigger`) that is certain to change whenever the `animation-delay` (`skipMs`) changes.
  */
 function ClockStat({
   currentStartedAt,
   isGameStarted,
+  moves,
 }: {
   currentStartedAt: string | number | undefined;
   isGameStarted: boolean;
+  moves: number;
 }) {
   const msPlayed = currentStartedAt ? Date.now() - Number(currentStartedAt) : 0;
 
   return (
-    <ClockStatContainer skipMs={msPlayed} data-animate={isGameStarted}>
+    <ClockStatContainer
+      skipMs={msPlayed}
+      data-animate={isGameStarted}
+      animationTrigger={(moves * 2) % 2 === 0}
+      animationTriggerNamePostfix={ClockStatContainer.__linaria.className}
+    >
       {devConfig.clockStat.showStaticValues && <ClockStatStaticValues msPlayed={msPlayed} />}
-      <noscript style={{ display: 'none' }}>
-        <style>
-          {`
-            .${ClockStatContainer.__linaria.className}::before {
-              animation-play-state: running !important;
-            }
-            .${ClockStatContainer.__linaria.className}::after {
-              animation-play-state: running !important;
-            }
-          `}
-        </style>
-      </noscript>
     </ClockStatContainer>
   );
 }

@@ -113,7 +113,14 @@ export const MovesStatContainer = styled.div<{ 'data-animate': boolean }>`
 `;
 const restartButtonPaddingForFingersPx = 30;
 const percentsInSecond = 100 / 60;
-export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': boolean }>`
+export const ClockStatContainer = styled.div<{
+  skipMs: number;
+  'data-animate': boolean;
+  /** Used for the classic dirty technique to reset an animation (creating two copies of the same animation and alternating between them based on a state) */
+  animationTrigger: boolean;
+  /** The `__linaria.className` is supposed to be passed here, because linaria also modifies animation names, and this component needs a conditional animation name. */
+  animationTriggerNamePostfix: string;
+}>`
   margin-left: ${restartButtonPaddingForFingersPx / 2}px;
   &::before {
     content: '0:';
@@ -127,11 +134,15 @@ export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': b
   &[data-animate='true'] {
     &::before {
       /* I have no idea why the minute clock is 30 seconds early */
-      animation: minutes ${60 * 60}s forwards step-end;
+      /* TODO: Is the above comment true anymore? Test later. */
+      animation: ${({ animationTrigger, animationTriggerNamePostfix }) =>
+          `minutes-${animationTrigger}-${animationTriggerNamePostfix}`}
+        ${60 * 60}s forwards step-end;
       animation-delay: ${({ skipMs }) => `-${skipMs}ms`};
-      animation-play-state: paused;
 
-      @keyframes minutes {
+      ${['true', 'false']
+        .map(
+          (val) => `@keyframes minutes-${val} {
         ${[...Array(60)]
           .map((val, index) => {
             const keyframe = percentsInSecond * index;
@@ -146,30 +157,39 @@ export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': b
         100% {
           content: '♾️:';
         }
-      }
+      }`,
+        )
+        .join('\n')}
     }
     &::after {
-      animation: seconds 60s infinite step-end;
+      animation: ${({ animationTrigger, animationTriggerNamePostfix }) =>
+          `seconds-${animationTrigger}-${animationTriggerNamePostfix}`}
+        60s infinite step-end;
       animation-delay: ${({ skipMs }) => `-${skipMs}ms`};
-      animation-play-state: paused;
 
-      @keyframes seconds {
-        ${[...Array(60)]
-          .map((val, index) => {
-            const keyframe = percentsInSecond * index;
-            const content = index < 10 ? `0${index}` : index;
+      ${['true', 'false']
+        .map(
+          (val) => `
+            @keyframes seconds-${val} {
+              ${[...Array(60)]
+                .map((val, index) => {
+                  const keyframe = percentsInSecond * index;
+                  const content = index < 10 ? `0${index}` : index;
 
-            return `
-              ${keyframe}% {
-                content: '${content}';
+                  return `
+                    ${keyframe}% {
+                      content: '${content}';
+                    }
+                  `;
+                })
+                .join('\n')}
+              100% {
+                content: '00';
               }
-            `;
-          })
-          .join('\n')}
-        100% {
-          content: '00';
-        }
-      }
+            }
+          `,
+        )
+        .join('\n')}
     }
   }
 `;
