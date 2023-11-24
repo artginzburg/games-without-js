@@ -22,6 +22,7 @@ import { getSharingFacebook } from '@/tools/social-share/sharers/facebook';
 import { newTab } from '@/tools/linkHelpers';
 import encodeParams from '@/tools/social-share/utils/encodeParams';
 
+import { AutoplayModule } from './components/AutoplayModule/AutoplayModule';
 import { CircleProgressBar } from './components/CircleProgressBar/CircleProgressBar';
 import { texts } from './data/texts';
 import { emojis } from './data/emojis';
@@ -53,6 +54,7 @@ const devConfig = {
   clockStat: {
     showStaticValues: false,
   },
+  allowAutoplay: true,
 };
 
 type AllowedSearchParams = 'seed' | 'size' | 'moves' | 'pending' | 'enabled' | 'startedAt';
@@ -198,6 +200,7 @@ export default function Memory({
         />
       )}
       <WinModal {...{ hasWon, moves, startedAt, cardCount, actionResetHref }} />
+      {devConfig.allowAutoplay && process.env.NODE_ENV !== 'production' && <AutoplayModule />}
     </PageWrapper>
   );
 }
