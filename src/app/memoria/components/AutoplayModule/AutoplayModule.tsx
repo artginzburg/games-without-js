@@ -23,6 +23,14 @@ export function AutoplayModule() {
         console.error('No grid element found');
         return;
       }
+      const approximateActualSearchInterval = 100;
+      console.info(
+        `Autoplay: started. ETA: ${
+          (grid.children.length *
+            (autoplayConfig.matchInterval + approximateActualSearchInterval)) /
+          1000
+        }s`,
+      );
       const knownNodes = new Map<number, string>();
       function getUnknownNode() {
         if (!grid) {
