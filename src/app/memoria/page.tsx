@@ -245,7 +245,7 @@ function Card({
         key={card.index}
         role="gridcell"
         data-rotated
-        aria-selected
+        aria-selected={isPending && !doPendingMatch && !doPendingMismatch}
         data-just-matched={isPending && doPendingMatch}
         data-just-mismatched={isPending && doPendingMismatch}
         aria-invalid={isPending && doPendingMismatch}

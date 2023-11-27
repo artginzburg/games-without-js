@@ -333,7 +333,8 @@ export const CardContainer = styled.div<{
 
   transition:
     background-color 0.25s,
-    transform 0.25s ${easings.easeOutBack};
+    transform 0.25s ${easings.easeOutBack},
+    box-shadow 0.25s;
 
   &[data-rotated='false'] {
     &:hover {
@@ -355,6 +356,16 @@ export const CardContainer = styled.div<{
   }
   &[data-just-mismatched='true'] {
     background-color: #d4003c;
+  }
+
+  &[aria-selected='true'] {
+    /* "Pending" style */
+    --box-shadow-color: #00dfdf;
+    @media (prefers-color-scheme: dark) {
+      --box-shadow-color: teal;
+    }
+    box-shadow: 0 0 4rem 0.5rem var(--box-shadow-color);
+    z-index: 1; /* So that box-shadow overlays all the other cards, not just the preceding ones */
   }
 
   position: relative;
