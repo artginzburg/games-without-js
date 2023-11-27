@@ -323,6 +323,8 @@ export const CardContainer = styled.div<{
 }>`
   user-select: none;
   cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 
   aspect-ratio: 1;
   background-color: #fffc;
@@ -337,9 +339,9 @@ export const CardContainer = styled.div<{
     box-shadow 0.25s;
 
   &[data-rotated='false'] {
-    &:hover {
+    ${mobileSafeHoverEffect(css`
       transform: scale(1.1);
-    }
+    `)}
   }
 
   &[data-rotated='true'] {
