@@ -294,23 +294,25 @@ export const CardsContainer = styled.section<{ boardSize: number; 'data-animate'
     ${[...Array(4 ** 2)]
       .map((val, index) => {
         const maxRandomOffset = 300;
-        const [x, y] = [getRandomOfAnySign(maxRandomOffset), getRandomOfAnySign(maxRandomOffset)];
+        const y = getRandomOfAnySign(maxRandomOffset);
+        const rotation = getRandomOfAnySign(90 * 2);
 
         return `
           &:nth-child(${index + 1}) {
-            animation-delay: ${0.1 * index + 0.1}s;
-            --x: ${x}px;
+            animation-delay: ${0.06 * index + index * (index * 0.001) + 0.1}s;
+            --x: ${maxRandomOffset}px;
             --y: ${y}px;
+            --rotation: ${rotation}deg;
             opacity: 0;
           }
         `;
       })
       .join('\n')}
 
-    animation: card-appear-on-start 0.2s forwards;
+    animation: card-appear-on-start 0.3s forwards;
     @keyframes card-appear-on-start {
       from {
-        transform: translate(var(--x), var(--y));
+        transform: translate(var(--x), var(--y)) rotateZ(var(--rotation));
       }
       to {
         transform: none; // BUG: this causes &:hover transform to not work.
