@@ -299,7 +299,8 @@ export const CardsContainer = styled.section<{ boardSize: number; 'data-animate'
         return `
           &:nth-child(${index + 1}) {
             animation-delay: ${0.1 * index + 0.1}s;
-            transform: translate(${x}px, ${y}px);
+            --x: ${x}px;
+            --y: ${y}px;
             opacity: 0;
           }
         `;
@@ -308,6 +309,9 @@ export const CardsContainer = styled.section<{ boardSize: number; 'data-animate'
 
     animation: card-appear-on-start 0.2s forwards;
     @keyframes card-appear-on-start {
+      from {
+        transform: translate(var(--x), var(--y));
+      }
       to {
         transform: none; // BUG: this causes &:hover transform to not work.
         opacity: initial;
