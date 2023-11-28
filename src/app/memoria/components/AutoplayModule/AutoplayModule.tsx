@@ -10,11 +10,8 @@ import { roundToDecimals } from '@/tools/roundToDecimals';
 //   clickInterval: 200,
 // };
 
+/** @todo disconnect observer on unmount */
 export function AutoplayModule() {
-  /**
-   * @todo
-   * - disable autoplay after all nodes are rotated (or could not find any new nodes)
-   */
   function autoplay() {
     // Autoplay logic:
     // 1. Look at all nodes and store already known ones
@@ -38,7 +35,7 @@ export function AutoplayModule() {
     const nodesToLookAcross: Element[] = [];
 
     lookAtAllNodesAndStoreKnownOnes();
-    observeAllNodes();
+    const autoplayObserver = observeAllNodes();
     displayETA();
     findClickableUnknownNodeAndClick();
 
@@ -152,6 +149,9 @@ export function AutoplayModule() {
       const clickableUnknownNode = findClickableUnknownNode();
       if (clickableUnknownNode) {
         clickNode(clickableUnknownNode);
+      } else {
+        autoplayObserver.disconnect();
+        console.info('Autoplay: finished.');
       }
     }
 
