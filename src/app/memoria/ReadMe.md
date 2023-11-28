@@ -7,7 +7,10 @@
 - [ ] Use `aria-label` or `title` to make all the Links accessible.
 - [ ] Add CSS-only tooltips instead of `title` for disabled elements, or make the disabled styles more obvious where they're not (e.g. in board size buttons container).
 - [x] "Pending" card style
-- [ ] Stop the clock after winning. Not that it's really visible since the win modal blurs the background, but still visible a bit, so stopping just for the polished feel seems necessary.
+- [ ] Stop the clock after winning (visually). Not that it's really visible since the win modal blurs the background, but still visible a bit, so stopping just for the polished feel seems necessary.
+- [ ] Stop the clock after winning (actually), possibly via a redirect to `?...&finishedAt=Date.now()`.
+- [ ] Rating system for each stat type. E.g. for moves: 3 stars is 12-14 moves with 16 cards; 2 stars is N moves = N cards; 1 star is therefore 20 moves with 16 cards; and 0 stars is more moves than that. But actually 3 stars should be equal to "perfect", as in "no misses that could be avoided". When winning with "perfect", the win modal should say "OCD!" (as in Obsessive Completion Distinction).
+- [ ] (Dev mode) make a button to replay with the same seed and size.
 
 ## Ideas
 
