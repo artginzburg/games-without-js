@@ -142,6 +142,7 @@ export default function Memory({
         <CardsContainer
           boardSize={boardSize}
           data-animate={!isGameStarted && boardSize <= searchParamsDefaults.size}
+          data-animate-win={hasWon && boardSize <= searchParamsDefaults.size}
           role="grid"
         >
           {cards.map((card) => (

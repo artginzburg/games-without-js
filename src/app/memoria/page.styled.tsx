@@ -282,7 +282,11 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 `;
 
-export const CardsContainer = styled.section<{ boardSize: number; 'data-animate': boolean }>`
+export const CardsContainer = styled.section<{
+  boardSize: number;
+  'data-animate': boolean;
+  'data-animate-win': boolean;
+}>`
   display: grid;
   grid-template-columns: repeat(${({ boardSize }) => boardSize}, 1fr);
   gap: calc(4rem / ${({ boardSize }) => boardSize});
@@ -317,6 +321,49 @@ export const CardsContainer = styled.section<{ boardSize: number; 'data-animate'
       to {
         transform: none; // BUG: this causes &:hover transform to not work.
         opacity: initial;
+      }
+    }
+  }
+
+  &[data-animate-win='true'] > div {
+    ${[...Array(4 ** 2)]
+      .map((val, index) => {
+        const rowsCount = 4;
+        const i = index + 1;
+
+        const row = Math.ceil(i / rowsCount);
+        // const rowIsOdd = row % 2 === 1;
+
+        const delayMultiplier = 0.1;
+
+        const animationOneElementDelay = 1 * delayMultiplier;
+        const columnBasedDelay = animationOneElementDelay * Math.abs(i - (row - 1) * rowsCount);
+
+        const orderBasedDelay = index * (5 / 4 ** 2) * delayMultiplier;
+
+        return `
+          &:nth-child(${i}) {
+            animation-delay: ${columnBasedDelay + orderBasedDelay}s;
+          }
+        `;
+      })
+      .join('\n')}
+
+    animation: card-spin-on-win 4s forwards;
+    @keyframes card-spin-on-win {
+      10% {
+        filter: none;
+      }
+      50% {
+        transform: scale(1.5);
+        filter: blur(100px);
+        opacity: 1;
+      }
+      90% {
+        opacity: 0;
+      }
+      to {
+        opacity: 0.3;
       }
     }
   }
