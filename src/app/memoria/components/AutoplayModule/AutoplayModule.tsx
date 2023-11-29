@@ -55,14 +55,6 @@ export function AutoplayModule() {
           if (knownPairs.has(content)) {
             const isMatched = htmlElement.getAttribute('data-just-matched') === 'true';
             if (isMatched) {
-              //#region (Supposedly) performance optimization — remove nodes from future lookup once they're matched. Not tested whether it actually makes the algorithm faster, but it decreases the amount of iterations over `allMatchedNodes` by around 40%.
-              const allMatchedNodes = grid.querySelectorAll('[data-just-matched="true"]');
-              allMatchedNodes.forEach((matchedNode) => {
-                const indexInNodesToLookAcross = nodesToLookAcross.indexOf(matchedNode);
-                nodesToLookAcross.splice(indexInNodesToLookAcross, 1);
-              });
-              //#endregion
-
               findClickableUnknownNodeAndClick();
               return;
             }
@@ -139,7 +131,7 @@ function getGridElement() {
 
 function lookAtAllNodesAndStoreKnownOnes(grid: ReturnType<typeof getGridElement>) {
   const knownPairs = new Map<string, number[]>();
-  /** @todo splice when nodes are about to be clicked anyway without a lookup. (Matched nodes are already spliced out). */
+  /** @todo splice when nodes are about to be clicked anyway without a lookup. And splice when nodes are matched. Beware: it may cause problems with starting out of some game states. */
   const nodesToLookAcross: Element[] = [];
 
   Array.from(grid.children).forEach((node, nodeIndex) => {
