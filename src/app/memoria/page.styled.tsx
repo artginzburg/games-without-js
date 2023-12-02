@@ -236,15 +236,27 @@ export const GameBottomButtonsContainer = styled.section`
     color: #eee;
   }
 `;
+const disabledGameBoardSizeButtonStyle = css`
+  opacity: 0.6;
+  &:active {
+    cursor: not-allowed;
+  }
+  > a {
+    pointer-events: none;
+  }
+`;
 export const GameBoardSizeButtonsContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
 
   column-gap: ${gapBetweenSmallRelatedElementsRem}rem;
 
+  user-select: none;
+
   &[aria-disabled='true'] {
-    pointer-events: none;
-    opacity: 0.6;
+    > div {
+      ${disabledGameBoardSizeButtonStyle}
+    }
   }
 `;
 export const GameBoardSizeButtonContainer = styled.div`
@@ -268,8 +280,7 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 
   &[aria-disabled='true'] {
-    pointer-events: none;
-    opacity: 0.6;
+    ${disabledGameBoardSizeButtonStyle}
   }
 
   > a {
