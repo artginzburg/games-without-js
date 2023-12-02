@@ -251,8 +251,11 @@ export const GameBoardSizeButtonContainer = styled.div`
   border-radius: 9999px;
   width: 25px;
   height: 25px;
-  background-color: #ddd;
-  color: #222;
+
+  background-color: #fffc; /* same as CardContainer */
+  @media (prefers-color-scheme: dark) {
+    background-color: #fff3; /* same as CardContainer */
+  }
 
   display: flex;
   justify-content: center;
