@@ -193,26 +193,34 @@ export const ClockStatContainer = styled.div<{
     }
   }
 `;
-export const RestartButtonContainer = styled.div`
-  &[aria-disabled='true'] {
+const commonDisabledButtonStyles = css`
+  opacity: 0.6;
+  &:active {
+    cursor: not-allowed;
+  }
+  > a {
     pointer-events: none;
-    opacity: 0.6;
+  }
+`;
+export const RestartButtonContainer = styled.div`
+  user-select: none;
 
-    &:active {
-      cursor: not-allowed;
-    }
+  &[aria-disabled='true'] {
+    ${commonDisabledButtonStyles}
   }
 
   > a {
     padding-left: ${restartButtonPaddingForFingersPx}px;
   }
 
-  svg {
-    transition: transform 0.3s;
-  }
-  &:hover {
+  &:not([aria-disabled='true']) {
     svg {
-      transform: rotateZ(90deg);
+      transition: transform 0.3s;
+    }
+    &:hover {
+      svg {
+        transform: rotateZ(90deg);
+      }
     }
   }
 `;
@@ -236,15 +244,6 @@ export const GameBottomButtonsContainer = styled.section`
     color: #eee;
   }
 `;
-const disabledGameBoardSizeButtonStyle = css`
-  opacity: 0.6;
-  &:active {
-    cursor: not-allowed;
-  }
-  > a {
-    pointer-events: none;
-  }
-`;
 export const GameBoardSizeButtonsContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -255,7 +254,7 @@ export const GameBoardSizeButtonsContainer = styled.div`
 
   &[aria-disabled='true'] {
     > div {
-      ${disabledGameBoardSizeButtonStyle}
+      ${commonDisabledButtonStyles}
     }
   }
 `;
@@ -280,7 +279,7 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 
   &[aria-disabled='true'] {
-    ${disabledGameBoardSizeButtonStyle}
+    ${commonDisabledButtonStyles}
   }
 
   > a {
