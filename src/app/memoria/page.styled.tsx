@@ -418,13 +418,64 @@ export const CardContainer = styled.div<{
     }
   }
   &[data-just-matched='true'] {
-    background-color: #44be2c;
+    --pulse-color: #000a;
     @media (prefers-color-scheme: dark) {
-      background-color: green;
+      --pulse-color: #fffa;
+    }
+
+    animation: match 0.5s linear;
+    @keyframes match {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 var(--pulse-color);
+      }
+
+      70% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 15px transparent;
+
+        border-radius: ${cardBorderRadiusRem * 2}rem;
+      }
+
+      85% {
+        transform: scale(0.95);
+
+        border-radius: ${cardBorderRadiusRem / 2}rem;
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 transparent;
+      }
     }
   }
   &[data-just-mismatched='true'] {
     background-color: #d4003c;
+
+    animation: wobble 0.5s;
+    @keyframes wobble {
+      0% {
+        transform: translateX(0%);
+      }
+      15% {
+        transform: translateX(-6%) rotateZ(-3deg);
+      }
+      30% {
+        transform: translateX(5%) rotateZ(2deg);
+      }
+      45% {
+        transform: translateX(-3%) rotateZ(-1deg);
+      }
+      60% {
+        transform: translateX(3%) rotateZ(1deg);
+      }
+      75% {
+        transform: translateX(-1%) rotateZ(-0.5deg);
+      }
+      100% {
+        transform: translateX(0%);
+      }
+    }
   }
 
   &[aria-selected='true'] {
