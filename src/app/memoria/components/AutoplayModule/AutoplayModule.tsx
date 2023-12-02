@@ -5,11 +5,11 @@ import { useEventListener } from 'usehooks-ts';
 import { roundToDecimals } from '@/tools/roundToDecimals';
 import { getElementIndex } from '@/tools/domToolkit';
 
-// /** @todo implement clickInterval */
-// const autoplayConfig = {
-//   // searchInterval: 20,
-//   clickInterval: 200,
-// };
+const autoplayConfig = {
+  // searchInterval: 20,
+  useClickInterval: false,
+  clickInterval: 250,
+};
 
 /** @todo disconnect observer on unmount */
 export function AutoplayModule() {
@@ -118,7 +118,15 @@ export function AutoplayModule() {
 }
 
 function clickNode(node: Element) {
-  (node.children[0] as HTMLElement).click();
+  function action() {
+    (node.children[0] as HTMLElement).click();
+  }
+
+  if (autoplayConfig.useClickInterval && autoplayConfig.clickInterval !== 0) {
+    setTimeout(action, autoplayConfig.clickInterval);
+  } else {
+    action();
+  }
 }
 
 function getGridElement() {
