@@ -403,11 +403,13 @@ export const CardContainer = styled.div<{
   transition:
     background-color 0.25s,
     transform 0.25s ${easings.easeOutBack},
-    box-shadow 0.25s;
+    box-shadow 0.25s,
+    border-radius 0.25s ${easings.easeOutBack};
 
   &[data-rotated='false'] {
-    ${mobileSafeHoverEffect(css`
+    ${mobileSafeHoverEffect(`
       transform: scale(1.1);
+      border-radius: ${cardBorderRadiusRem * 2}rem;
     `)}
   }
 
