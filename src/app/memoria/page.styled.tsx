@@ -213,10 +213,10 @@ export const RestartButtonContainer = styled.div`
     padding-left: ${restartButtonPaddingForFingersPx}px;
   }
 
+  svg {
+    transition: transform 0.3s;
+  }
   &:not([aria-disabled='true']) {
-    svg {
-      transition: transform 0.3s;
-    }
     &:hover {
       svg {
         transform: rotateZ(90deg);
