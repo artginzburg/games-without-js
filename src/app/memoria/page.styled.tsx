@@ -320,20 +320,16 @@ export const CardsContainer = styled.section<{
             --x: ${maxRandomOffset}px;
             --y: ${y}px;
             --rotation: ${rotation}deg;
-            opacity: 0;
           }
         `;
       })
       .join('\n')}
 
-    animation: card-appear-on-start 0.3s forwards;
+    animation: card-appear-on-start 0.3s backwards;
     @keyframes card-appear-on-start {
       from {
+        opacity: 0;
         transform: translate(var(--x), var(--y)) rotateZ(var(--rotation));
-      }
-      to {
-        transform: none; // BUG: this causes &:hover transform to not work.
-        opacity: initial;
       }
     }
   }
