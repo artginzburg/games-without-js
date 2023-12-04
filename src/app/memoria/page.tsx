@@ -612,5 +612,14 @@ function GameLink<RouteType>({
 function createGameQuery(
   params: Partial<Record<AllowedSearchParams, string | number | undefined>>,
 ) {
-  return `?${encodeParams(params)}` as const;
+  const paramsWithoutDefaults = Object.fromEntries(
+    Object.entries(params).filter(([key, value]) => {
+      const defaultValue =
+        key in searchParamsDefaults
+          ? searchParamsDefaults[key as Extract<AllowedSearchParams, 'size' | 'moves'>]
+          : undefined;
+      return !defaultValue || defaultValue !== value;
+    }),
+  );
+  return `?${encodeParams(paramsWithoutDefaults)}` as const;
 }
