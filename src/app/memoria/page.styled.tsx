@@ -133,8 +133,6 @@ export const ClockStatContainer = styled.div<{
   }
   &[data-animate='true'] {
     &::before {
-      /* I have no idea why the minute clock is 30 seconds early */
-      /* TODO: Is the above comment true anymore? Test later. */
       animation: ${({ animationTrigger, animationTriggerNamePostfix }) =>
           `minutes-${animationTrigger}-${animationTriggerNamePostfix}`}
         ${60 * 60}s forwards step-end;
