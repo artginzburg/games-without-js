@@ -31,7 +31,7 @@ export const GameHeading = styled.h1<{ 'data-animate': boolean }>`
 
       ${[...Array(texts.title.length)]
         .map(
-          (val, index) => `
+          (_val, index) => `
             &:nth-child(${index + 1}) {
               animation-delay: ${0.1 * index + 0.1}s;
             }
@@ -142,7 +142,7 @@ export const ClockStatContainer = styled.div<{
         .map(
           (val) => `@keyframes minutes-${val} {
         ${[...Array(60)]
-          .map((val, index) => {
+          .map((_val, index) => {
             const keyframe = percentsInSecond * index;
 
             return `
@@ -170,7 +170,7 @@ export const ClockStatContainer = styled.div<{
           (val) => `
             @keyframes seconds-${val} {
               ${[...Array(60)]
-                .map((val, index) => {
+                .map((_val, index) => {
                   const keyframe = percentsInSecond * index;
                   const content = index < 10 ? `0${index}` : index;
 
@@ -383,7 +383,7 @@ export const CardsContainer = styled.section<{
 
   &[data-animate='true'] > div {
     ${[...Array(4 ** 2)]
-      .map((val, index) => {
+      .map((_val, index) => {
         const maxRandomOffset = 300;
         const y = getRandomOfAnySign(maxRandomOffset);
         const rotation = getRandomOfAnySign(90 * 2);
@@ -410,7 +410,7 @@ export const CardsContainer = styled.section<{
 
   &[data-animate-win='true'] > div {
     ${[...Array(4 ** 2)]
-      .map((val, index) => {
+      .map((_val, index) => {
         const rowsCount = 4;
         const i = index + 1;
 

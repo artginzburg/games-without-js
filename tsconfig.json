@@ -21,7 +21,11 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "downlevelIteration": true
+    // Custom (not from Next.js):
+    "downlevelIteration": true,
+    // TODO make these only apply to the editor errors, not to the production build
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

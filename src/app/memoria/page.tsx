@@ -38,7 +38,6 @@ import {
   RestartButtonContainer,
   GameBottomButtonsContainer,
   GameBoardSizeButtonContainer,
-  GameBoardSizeButtonsContainer,
   BackLinkContainer,
   PageWrapper,
   ClockStatContainer,
@@ -175,7 +174,6 @@ export default function Memory({
               isGameStarted,
               boardSize,
               seed,
-              moves,
               pendingString,
               enabledString,
             }}
@@ -366,14 +364,12 @@ function GameBoardSizeButtons({
   isGameStarted,
   boardSize,
   seed,
-  moves,
   pendingString,
   enabledString,
 }: {
   isGameStarted: boolean;
   boardSize: number;
   seed: string;
-  moves: number;
   pendingString: string | undefined;
   enabledString: string | undefined;
 }) {
