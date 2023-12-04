@@ -42,6 +42,7 @@ import {
   BackLinkContainer,
   PageWrapper,
   ClockStatContainer,
+  GameBoardSizeButtonsContainerWithTooltip,
 } from './page.styled';
 
 export const metadata: Metadata = {
@@ -164,9 +165,7 @@ export default function Memory({
             />
           ))}
         </CardsContainer>
-        <GameBottomButtonsContainer
-          title={isGameStarted ? 'Reset the game to change board size' : undefined}
-        >
+        <GameBottomButtonsContainer>
           <p>
             <FaChessBoard />
             {boardSize}x{boardSize}
@@ -385,7 +384,10 @@ function GameBoardSizeButtons({
   const isIncreaseButtonDisabled = boardSizeIfIncreased ** 2 / 2 > emojis.length;
 
   return (
-    <GameBoardSizeButtonsContainer aria-disabled={isGameStarted}>
+    <GameBoardSizeButtonsContainerWithTooltip
+      aria-disabled={isGameStarted}
+      data-text={isGameStarted ? 'Finish the game to change board size' : undefined}
+    >
       <GameBoardSizeButtonContainer role="button" aria-disabled={isDecreaseButtonDisabled}>
         <Link
           href={`?${encodeParams({
@@ -416,7 +418,7 @@ function GameBoardSizeButtons({
           +
         </Link>
       </GameBoardSizeButtonContainer>
-    </GameBoardSizeButtonsContainer>
+    </GameBoardSizeButtonsContainerWithTooltip>
   );
 }
 

@@ -295,6 +295,82 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 `;
 
+const gameBoardSizeButtonsStyleConfig = {
+  tooltip: {
+    backgroundColor: 'rgb(255, 255, 255, 0.7)',
+    backgroundColorDarkScheme: 'rgb(80, 80, 80, 0.7)',
+    marginSidePx: 15,
+    arrowSizePx: 10,
+  },
+};
+const gameBoardSizeButtonsStyleInternalCalculations = {
+  arrowMarginNegative: `${
+    gameBoardSizeButtonsStyleConfig.tooltip.arrowSizePx -
+    gameBoardSizeButtonsStyleConfig.tooltip.marginSidePx
+  }px`,
+  tooltipBoxMarginSide: `${gameBoardSizeButtonsStyleConfig.tooltip.marginSidePx}px`,
+};
+export const GameBoardSizeButtonsContainerWithTooltip = styled(GameBoardSizeButtonsContainer)<{
+  'data-text': string | undefined;
+}>`
+  &[aria-disabled='true'] {
+    position: relative;
+
+    &::before {
+      content: attr(data-text);
+      position: absolute;
+
+      top: 50%;
+      transform: translateY(-50%);
+
+      left: 100%;
+      margin-left: ${gameBoardSizeButtonsStyleInternalCalculations.tooltipBoxMarginSide};
+
+      /* basic styles */
+      box-sizing: border-box;
+      width: 217px;
+      max-width: 45vw;
+      padding-block: 10px;
+      padding-inline: 10px;
+      border-radius: ${cardBorderRadiusRem}rem;
+      background-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColor};
+      @media (prefers-color-scheme: dark) {
+        background-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColorDarkScheme};
+      }
+      /* color: #000; */
+      text-align: center;
+
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+
+      top: 50%;
+      transform: translateY(-50%);
+
+      left: 100%;
+      margin-left: ${gameBoardSizeButtonsStyleInternalCalculations.arrowMarginNegative};
+
+      /* the arrow */
+      border: ${gameBoardSizeButtonsStyleConfig.tooltip.arrowSizePx}px solid transparent;
+      border-right-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColor};
+      @media (prefers-color-scheme: dark) {
+        border-right-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColorDarkScheme};
+      }
+      display: none;
+    }
+
+    &:hover {
+      &::before,
+      &::after {
+        display: block;
+      }
+    }
+  }
+`;
+
 export const CardsContainer = styled.section<{
   boardSize: number;
   'data-animate': boolean;
