@@ -9,7 +9,7 @@ import {
   FaShoePrints,
   FaXTwitter,
 } from 'react-icons/fa6';
-import Link from 'next/link';
+import Link, { LinkProps } from 'next/link';
 
 import { deterministicShuffle } from '@/tools/deterministicShuffle';
 import { generateRandomString } from '@/tools/generateRandomString';
@@ -126,14 +126,9 @@ export default function Memory({
             moves={moves}
           />
           <RestartButtonContainer aria-disabled={!isGameStarted}>
-            <Link
-              href={actionResetHref}
-              scroll={false}
-              tabIndex={!isGameStarted ? -1 : undefined}
-              accessKey={isGameStarted ? 'r' : undefined}
-            >
+            <GameLink href={actionResetHref} noFocus={!isGameStarted} accessKey="r">
               <FaRepeat />
-            </Link>
+            </GameLink>
           </RestartButtonContainer>
         </GameTopButtonsContainer>
         <CardsContainer
@@ -256,16 +251,15 @@ function Card({
 
   return (
     <CardContainer key={card.index} role="gridcell" data-rotated={false} aria-selected={false}>
-      <Link
-        href={createGameQuery({
+      <GameLink
+        query={{
           seed,
           size: boardSize,
           pending: newPendingString,
           enabled: newEnabledString,
           moves: nextMoves,
           startedAt: currentStartedAt,
-        })}
-        scroll={false}
+        }}
       />
     </CardContainer>
   );
@@ -382,34 +376,32 @@ function GameBoardSizeButtons({
       data-text={isGameStarted ? 'Finish the game to change board size' : undefined}
     >
       <GameBoardSizeButtonContainer role="button" aria-disabled={isDecreaseButtonDisabled}>
-        <Link
-          href={createGameQuery({
+        <GameLink
+          query={{
             seed,
             size: boardSize - boardSizeStep,
             pending: pendingString,
             enabled: enabledString,
-          })}
-          scroll={false}
-          tabIndex={isDecreaseButtonDisabled || isGameStarted ? -1 : undefined}
-          accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '-'}
+          }}
+          noFocus={isDecreaseButtonDisabled || isGameStarted}
+          accessKey="-"
         >
           -
-        </Link>
+        </GameLink>
       </GameBoardSizeButtonContainer>
       <GameBoardSizeButtonContainer role="button" aria-disabled={isIncreaseButtonDisabled}>
-        <Link
-          href={createGameQuery({
+        <GameLink
+          query={{
             seed,
             size: boardSizeIfIncreased,
             pending: pendingString,
             enabled: enabledString,
-          })}
-          scroll={false}
-          tabIndex={isIncreaseButtonDisabled || isGameStarted ? -1 : undefined}
-          accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '='}
+          }}
+          noFocus={isIncreaseButtonDisabled || isGameStarted}
+          accessKey="="
         >
           +
-        </Link>
+        </GameLink>
       </GameBoardSizeButtonContainer>
     </GameBoardSizeButtonsContainerWithTooltip>
   );
@@ -453,9 +445,7 @@ function WinModal({
               card.
             </p>
             <p>{"Let's go again?"}</p>
-            <Link href={actionResetHref} scroll={false}>
-              Play
-            </Link>
+            <GameLink href={actionResetHref}>Play</GameLink>
           </>
         )}
       </section>
@@ -560,29 +550,27 @@ function DevOnlyMenu({
       <p>Dev-only menu:</p>
       <ul>
         <DevOnlyMenuLi aria-disabled={enabledString === enableAllEnabledString}>
-          <Link
-            href={createGameQuery({
+          <GameLink
+            query={{
               seed,
               size: boardSize,
               enabled: enableAllEnabledString,
               moves: nextMoves,
-            })}
-            scroll={false}
+            }}
           >
             Enable all
-          </Link>
+          </GameLink>
         </DevOnlyMenuLi>
         <li>
-          <Link
-            href={createGameQuery({
+          <GameLink
+            query={{
               seed,
               size: boardSize,
               moves: nextMoves,
-            })}
-            scroll={false}
+            }}
           >
             Disable all
-          </Link>
+          </GameLink>
         </li>
       </ul>
 
@@ -595,6 +583,29 @@ function DevOnlyMenu({
         </p>
       </div>
     </section>
+  );
+}
+
+/** A helper wrapper around `next/link` */
+function GameLink<RouteType>({
+  noFocus,
+  accessKey,
+  href,
+  query,
+  ...rest
+}: (Omit<LinkProps<RouteType>, 'href'> &
+  (
+    | { href?: never; query: Parameters<typeof createGameQuery>[0] }
+    | { href: LinkProps<RouteType>['href']; query?: never }
+  )) & { noFocus?: boolean }): JSX.Element {
+  return (
+    <Link
+      href={href ?? createGameQuery(query!)}
+      tabIndex={noFocus ? -1 : undefined}
+      accessKey={noFocus ? undefined : accessKey}
+      scroll={false}
+      {...rest}
+    />
   );
 }
 
