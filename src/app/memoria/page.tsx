@@ -9,7 +9,6 @@ import {
   FaShoePrints,
   FaXTwitter,
 } from 'react-icons/fa6';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 import { deterministicShuffle } from '@/tools/deterministicShuffle';
@@ -68,11 +67,9 @@ export default function Memory({
 }: {
   searchParams: Partial<Record<AllowedSearchParams, string>>;
 }) {
-  const { seed } = searchParams;
+  const seed = searchParams.seed ?? generateRandomString();
   const actionResetHref = `?seed=${generateRandomString()}` as const;
-  if (!seed) {
-    redirect(actionResetHref);
-  }
+
   const { startedAt, enabled: enabledString, pending: pendingString } = searchParams;
 
   const boardSize = searchParams.size ? Number(searchParams.size) : searchParamsDefaults.size;
