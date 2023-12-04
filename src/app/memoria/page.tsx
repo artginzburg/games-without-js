@@ -257,14 +257,14 @@ function Card({
   return (
     <CardContainer key={card.index} role="gridcell" data-rotated={false} aria-selected={false}>
       <Link
-        href={`?${encodeParams({
+        href={createGameQuery({
           seed,
           size: boardSize,
           pending: newPendingString,
           enabled: newEnabledString,
           moves: nextMoves,
           startedAt: currentStartedAt,
-        })}`}
+        })}
         scroll={false}
       />
     </CardContainer>
@@ -383,12 +383,12 @@ function GameBoardSizeButtons({
     >
       <GameBoardSizeButtonContainer role="button" aria-disabled={isDecreaseButtonDisabled}>
         <Link
-          href={`?${encodeParams({
+          href={createGameQuery({
             seed,
             size: boardSize - boardSizeStep,
             pending: pendingString,
             enabled: enabledString,
-          })}`}
+          })}
           scroll={false}
           tabIndex={isDecreaseButtonDisabled || isGameStarted ? -1 : undefined}
           accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '-'}
@@ -398,12 +398,12 @@ function GameBoardSizeButtons({
       </GameBoardSizeButtonContainer>
       <GameBoardSizeButtonContainer role="button" aria-disabled={isIncreaseButtonDisabled}>
         <Link
-          href={`?${encodeParams({
+          href={createGameQuery({
             seed,
             size: boardSizeIfIncreased,
             pending: pendingString,
             enabled: enabledString,
-          })}`}
+          })}
           scroll={false}
           tabIndex={isIncreaseButtonDisabled || isGameStarted ? -1 : undefined}
           accessKey={isDecreaseButtonDisabled || isGameStarted ? undefined : '='}
@@ -561,12 +561,12 @@ function DevOnlyMenu({
       <ul>
         <DevOnlyMenuLi aria-disabled={enabledString === enableAllEnabledString}>
           <Link
-            href={`?${encodeParams({
+            href={createGameQuery({
               seed,
               size: boardSize,
               enabled: enableAllEnabledString,
               moves: nextMoves,
-            })}`}
+            })}
             scroll={false}
           >
             Enable all
@@ -574,11 +574,11 @@ function DevOnlyMenu({
         </DevOnlyMenuLi>
         <li>
           <Link
-            href={`?${encodeParams({
+            href={createGameQuery({
               seed,
               size: boardSize,
               moves: nextMoves,
-            })}`}
+            })}
             scroll={false}
           >
             Disable all
@@ -596,4 +596,10 @@ function DevOnlyMenu({
       </div>
     </section>
   );
+}
+
+function createGameQuery(
+  params: Partial<Record<AllowedSearchParams, string | number | undefined>>,
+) {
+  return `?${encodeParams(params)}` as const;
 }
