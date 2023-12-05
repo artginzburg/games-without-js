@@ -4,7 +4,7 @@
 - [x] Rewrite all queries from strings to object literals
 - [x] Add type annotations for queries
 - [ ] Rename `enabled` to `guessed`
-- [ ] Use `aria-label` or `title` to make all the Links accessible.
+- [x] Use `aria-label` or `title` to make all the Links accessible.
 - [ ] Add CSS-only tooltips instead of `title` for disabled elements, or make the disabled styles more obvious where they're not (e.g. in board size buttons container).
 - [x] "Pending" card style
 - [ ] Stop the clock after winning (visually). Not that it's really visible since the win modal blurs the background, but still visible a bit, so stopping just for the polished feel seems necessary.

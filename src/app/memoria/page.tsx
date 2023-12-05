@@ -126,7 +126,7 @@ export default function Memory({
             moves={moves}
           />
           <RestartButtonContainer aria-disabled={!isGameStarted}>
-            <GameLink href={actionResetHref} noFocus={!isGameStarted} accessKey="r">
+            <GameLink href={actionResetHref} noFocus={!isGameStarted} accessKey="r" title="Restart">
               <FaRepeat />
             </GameLink>
           </RestartButtonContainer>
@@ -260,6 +260,7 @@ function Card({
           moves: nextMoves,
           startedAt: currentStartedAt,
         }}
+        aria-label={`Rotate card ${card.index + 1}`}
       />
     </CardContainer>
   );
