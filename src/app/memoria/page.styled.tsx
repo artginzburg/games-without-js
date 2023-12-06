@@ -31,7 +31,7 @@ export const GameHeading = styled.h1<{ 'data-animate': boolean }>`
 
       ${[...Array(texts.title.length)]
         .map(
-          (val, index) => `
+          (_val, index) => `
             &:nth-child(${index + 1}) {
               animation-delay: ${0.1 * index + 0.1}s;
             }
@@ -113,7 +113,14 @@ export const MovesStatContainer = styled.div<{ 'data-animate': boolean }>`
 `;
 const restartButtonPaddingForFingersPx = 30;
 const percentsInSecond = 100 / 60;
-export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': boolean }>`
+export const ClockStatContainer = styled.div<{
+  skipMs: number;
+  'data-animate': boolean;
+  /** Used for the classic dirty technique to reset an animation (creating two copies of the same animation and alternating between them based on a state) */
+  animationTrigger: boolean;
+  /** The `__linaria.className` is supposed to be passed here, because linaria also modifies animation names, and this component needs a conditional animation name. */
+  animationTriggerNamePostfix: string;
+}>`
   margin-left: ${restartButtonPaddingForFingersPx / 2}px;
   &::before {
     content: '0:';
@@ -126,14 +133,16 @@ export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': b
   }
   &[data-animate='true'] {
     &::before {
-      /* I have no idea why the minute clock is 30 seconds early */
-      animation: minutes ${60 * 60}s forwards step-end;
+      animation: ${({ animationTrigger, animationTriggerNamePostfix }) =>
+          `minutes-${animationTrigger}-${animationTriggerNamePostfix}`}
+        ${60 * 60}s forwards step-end;
       animation-delay: ${({ skipMs }) => `-${skipMs}ms`};
-      animation-play-state: paused;
 
-      @keyframes minutes {
+      ${['true', 'false']
+        .map(
+          (val) => `@keyframes minutes-${val} {
         ${[...Array(60)]
-          .map((val, index) => {
+          .map((_val, index) => {
             const keyframe = percentsInSecond * index;
 
             return `
@@ -146,41 +155,56 @@ export const ClockStatContainer = styled.div<{ skipMs: number; 'data-animate': b
         100% {
           content: '♾️:';
         }
-      }
+      }`,
+        )
+        .join('\n')}
     }
     &::after {
-      animation: seconds 60s infinite step-end;
+      animation: ${({ animationTrigger, animationTriggerNamePostfix }) =>
+          `seconds-${animationTrigger}-${animationTriggerNamePostfix}`}
+        60s infinite step-end;
       animation-delay: ${({ skipMs }) => `-${skipMs}ms`};
-      animation-play-state: paused;
 
-      @keyframes seconds {
-        ${[...Array(60)]
-          .map((val, index) => {
-            const keyframe = percentsInSecond * index;
-            const content = index < 10 ? `0${index}` : index;
+      ${['true', 'false']
+        .map(
+          (val) => `
+            @keyframes seconds-${val} {
+              ${[...Array(60)]
+                .map((_val, index) => {
+                  const keyframe = percentsInSecond * index;
+                  const content = index < 10 ? `0${index}` : index;
 
-            return `
-              ${keyframe}% {
-                content: '${content}';
+                  return `
+                    ${keyframe}% {
+                      content: '${content}';
+                    }
+                  `;
+                })
+                .join('\n')}
+              100% {
+                content: '00';
               }
-            `;
-          })
-          .join('\n')}
-        100% {
-          content: '00';
-        }
-      }
+            }
+          `,
+        )
+        .join('\n')}
     }
   }
 `;
-export const RestartButtonContainer = styled.div`
-  &[aria-disabled='true'] {
+const commonDisabledButtonStyles = css`
+  opacity: 0.6;
+  &:active {
+    cursor: not-allowed;
+  }
+  > a {
     pointer-events: none;
-    opacity: 0.6;
+  }
+`;
+export const RestartButtonContainer = styled.div`
+  user-select: none;
 
-    &:active {
-      cursor: not-allowed;
-    }
+  &[aria-disabled='true'] {
+    ${commonDisabledButtonStyles}
   }
 
   > a {
@@ -190,9 +214,11 @@ export const RestartButtonContainer = styled.div`
   svg {
     transition: transform 0.3s;
   }
-  &:hover {
-    svg {
-      transform: rotateZ(90deg);
+  &:not([aria-disabled='true']) {
+    &:hover {
+      svg {
+        transform: rotateZ(90deg);
+      }
     }
   }
 `;
@@ -222,17 +248,23 @@ export const GameBoardSizeButtonsContainer = styled.div`
 
   column-gap: ${gapBetweenSmallRelatedElementsRem}rem;
 
+  user-select: none;
+
   &[aria-disabled='true'] {
-    pointer-events: none;
-    opacity: 0.6;
+    > div {
+      ${commonDisabledButtonStyles}
+    }
   }
 `;
 export const GameBoardSizeButtonContainer = styled.div`
   border-radius: 9999px;
   width: 25px;
   height: 25px;
-  background-color: #ddd;
-  color: #222;
+
+  background-color: #fffc; /* same as CardContainer */
+  @media (prefers-color-scheme: dark) {
+    background-color: #fff3; /* same as CardContainer */
+  }
 
   display: flex;
   justify-content: center;
@@ -245,8 +277,7 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 
   &[aria-disabled='true'] {
-    pointer-events: none;
-    opacity: 0.6;
+    ${commonDisabledButtonStyles}
   }
 
   > a {
@@ -262,7 +293,87 @@ export const GameBoardSizeButtonContainer = styled.div`
   }
 `;
 
-export const CardsContainer = styled.section<{ boardSize: number; 'data-animate': boolean }>`
+const gameBoardSizeButtonsStyleConfig = {
+  tooltip: {
+    backgroundColor: 'rgb(255, 255, 255, 0.7)',
+    backgroundColorDarkScheme: 'rgb(80, 80, 80, 0.7)',
+    marginSidePx: 15,
+    arrowSizePx: 10,
+  },
+};
+const gameBoardSizeButtonsStyleInternalCalculations = {
+  arrowMarginNegative: `${
+    gameBoardSizeButtonsStyleConfig.tooltip.arrowSizePx -
+    gameBoardSizeButtonsStyleConfig.tooltip.marginSidePx
+  }px`,
+  tooltipBoxMarginSide: `${gameBoardSizeButtonsStyleConfig.tooltip.marginSidePx}px`,
+};
+export const GameBoardSizeButtonsContainerWithTooltip = styled(GameBoardSizeButtonsContainer)<{
+  'data-text': string | undefined;
+}>`
+  &[aria-disabled='true'] {
+    position: relative;
+
+    &::before {
+      content: attr(data-text);
+      position: absolute;
+
+      top: 50%;
+      transform: translateY(-50%);
+
+      left: 100%;
+      margin-left: ${gameBoardSizeButtonsStyleInternalCalculations.tooltipBoxMarginSide};
+
+      /* basic styles */
+      box-sizing: border-box;
+      width: 217px;
+      max-width: 45vw;
+      padding-block: 10px;
+      padding-inline: 10px;
+      border-radius: ${cardBorderRadiusRem}rem;
+      background-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColor};
+      @media (prefers-color-scheme: dark) {
+        background-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColorDarkScheme};
+      }
+      /* color: #000; */
+      text-align: center;
+
+      display: none;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+
+      top: 50%;
+      transform: translateY(-50%);
+
+      left: 100%;
+      margin-left: ${gameBoardSizeButtonsStyleInternalCalculations.arrowMarginNegative};
+
+      /* the arrow */
+      border: ${gameBoardSizeButtonsStyleConfig.tooltip.arrowSizePx}px solid transparent;
+      border-right-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColor};
+      @media (prefers-color-scheme: dark) {
+        border-right-color: ${gameBoardSizeButtonsStyleConfig.tooltip.backgroundColorDarkScheme};
+      }
+      display: none;
+    }
+
+    &:hover {
+      &::before,
+      &::after {
+        display: block;
+      }
+    }
+  }
+`;
+
+export const CardsContainer = styled.section<{
+  boardSize: number;
+  'data-animate': boolean;
+  'data-animate-win': boolean;
+}>`
   display: grid;
   grid-template-columns: repeat(${({ boardSize }) => boardSize}, 1fr);
   gap: calc(4rem / ${({ boardSize }) => boardSize});
@@ -272,25 +383,70 @@ export const CardsContainer = styled.section<{ boardSize: number; 'data-animate'
 
   &[data-animate='true'] > div {
     ${[...Array(4 ** 2)]
-      .map((val, index) => {
+      .map((_val, index) => {
         const maxRandomOffset = 300;
-        const [x, y] = [getRandomOfAnySign(maxRandomOffset), getRandomOfAnySign(maxRandomOffset)];
+        const y = getRandomOfAnySign(maxRandomOffset);
+        const rotation = getRandomOfAnySign(90 * 2);
 
         return `
           &:nth-child(${index + 1}) {
-            animation-delay: ${0.1 * index + 0.1}s;
-            transform: translate(${x}px, ${y}px);
-            opacity: 0;
+            animation-delay: ${0.06 * index + index * (index * 0.001) + 0.1}s;
+            --x: ${maxRandomOffset}px;
+            --y: ${y}px;
+            --rotation: ${rotation}deg;
           }
         `;
       })
       .join('\n')}
 
-    animation: card-appear-on-start 0.2s forwards;
+    animation: card-appear-on-start 0.3s backwards;
     @keyframes card-appear-on-start {
+      from {
+        opacity: 0;
+        transform: translate(var(--x), var(--y)) rotateZ(var(--rotation));
+      }
+    }
+  }
+
+  &[data-animate-win='true'] > div {
+    ${[...Array(4 ** 2)]
+      .map((_val, index) => {
+        const rowsCount = 4;
+        const i = index + 1;
+
+        const row = Math.ceil(i / rowsCount);
+        // const rowIsOdd = row % 2 === 1;
+
+        const delayMultiplier = 0.1;
+
+        const animationOneElementDelay = 1 * delayMultiplier;
+        const columnBasedDelay = animationOneElementDelay * Math.abs(i - (row - 1) * rowsCount);
+
+        const orderBasedDelay = index * (5 / 4 ** 2) * delayMultiplier;
+
+        return `
+          &:nth-child(${i}) {
+            animation-delay: ${columnBasedDelay + orderBasedDelay}s;
+          }
+        `;
+      })
+      .join('\n')}
+
+    animation: card-spin-on-win 4s forwards;
+    @keyframes card-spin-on-win {
+      10% {
+        filter: none;
+      }
+      50% {
+        transform: scale(1.5);
+        filter: blur(100px);
+        opacity: 1;
+      }
+      90% {
+        opacity: 0;
+      }
       to {
-        transform: none; // BUG: this causes &:hover transform to not work.
-        opacity: initial;
+        opacity: 0.3;
       }
     }
   }
@@ -303,6 +459,8 @@ export const CardContainer = styled.div<{
 }>`
   user-select: none;
   cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 
   aspect-ratio: 1;
   background-color: #fffc;
@@ -313,12 +471,15 @@ export const CardContainer = styled.div<{
 
   transition:
     background-color 0.25s,
-    transform 0.25s ${easings.easeOutBack};
+    transform 0.25s ${easings.easeOutBack},
+    box-shadow 0.25s,
+    border-radius 0.25s ${easings.easeOutBack};
 
   &[data-rotated='false'] {
-    &:hover {
+    ${mobileSafeHoverEffect(`
       transform: scale(1.1);
-    }
+      border-radius: ${cardBorderRadiusRem * 2}rem;
+    `)}
   }
 
   &[data-rotated='true'] {
@@ -328,13 +489,74 @@ export const CardContainer = styled.div<{
     }
   }
   &[data-just-matched='true'] {
-    background-color: #44be2c;
+    --pulse-color: #000a;
     @media (prefers-color-scheme: dark) {
-      background-color: green;
+      --pulse-color: #fffa;
+    }
+
+    animation: match 0.5s linear;
+    @keyframes match {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 var(--pulse-color);
+      }
+
+      70% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 15px transparent;
+
+        border-radius: ${cardBorderRadiusRem * 2}rem;
+      }
+
+      85% {
+        transform: scale(0.95);
+
+        border-radius: ${cardBorderRadiusRem / 2}rem;
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 transparent;
+      }
     }
   }
   &[data-just-mismatched='true'] {
     background-color: #d4003c;
+
+    animation: wobble 0.5s;
+    @keyframes wobble {
+      0% {
+        transform: translateX(0%);
+      }
+      15% {
+        transform: translateX(-6%) rotateZ(-3deg);
+      }
+      30% {
+        transform: translateX(5%) rotateZ(2deg);
+      }
+      45% {
+        transform: translateX(-3%) rotateZ(-1deg);
+      }
+      60% {
+        transform: translateX(3%) rotateZ(1deg);
+      }
+      75% {
+        transform: translateX(-1%) rotateZ(-0.5deg);
+      }
+      100% {
+        transform: translateX(0%);
+      }
+    }
+  }
+
+  &[aria-selected='true'] {
+    /* "Pending" style */
+    --box-shadow-color: #00dfdf;
+    @media (prefers-color-scheme: dark) {
+      --box-shadow-color: teal;
+    }
+    box-shadow: 0 0 4rem 0.5rem var(--box-shadow-color);
+    z-index: 1; /* So that box-shadow overlays all the other cards, not just the preceding ones */
   }
 
   position: relative;
@@ -436,7 +658,6 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
     max-width: 100%;
     max-height: 400px;
     overflow-y: auto;
-    padding: ${cardsContainerPaddingRem}rem;
     margin-inline: ${cardsContainerPaddingRem}rem;
     background: linear-gradient(#fff, #ddd);
     color: #222;
@@ -446,6 +667,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
     transform: scale(0);
 
     &:first-child {
+      padding: ${cardsContainerPaddingRem}rem;
       > a {
         font-size: 2rem;
         border-radius: ${cardBorderRadiusRem}rem;
@@ -472,8 +694,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
       align-items: center;
       column-gap: ${gapBetweenSmallRelatedElementsRem * 2}rem;
 
-      padding: 0;
-      padding-block: 0.2rem;
+      padding-block: 0.15rem;
       padding-right: 0.2rem;
       padding-left: ${cardsContainerPaddingRem}rem;
 

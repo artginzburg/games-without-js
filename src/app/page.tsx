@@ -30,7 +30,7 @@ export default function Home() {
         <article>
           <GamesList>
             <li>
-              <Link href={'/memoria'}>
+              <Link href={'/memoria'} accessKey="1">
                 <FaChessBoard /> {memoryGameTexts.title}{' '}
                 <span>· {memoryGameTexts.description}</span>
               </Link>

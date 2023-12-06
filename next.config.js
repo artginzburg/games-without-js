@@ -13,6 +13,11 @@ const nextConfig = {
       },
     ],
   },
+  linaria: {
+    features: {
+      useBabelConfigs: false,
+    },
+  },
 };
 
 module.exports = withLinaria(nextConfig);

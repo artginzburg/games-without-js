@@ -9,8 +9,7 @@ import {
   FaShoePrints,
   FaXTwitter,
 } from 'react-icons/fa6';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import Link, { LinkProps } from 'next/link';
 
 import { deterministicShuffle } from '@/tools/deterministicShuffle';
 import { generateRandomString } from '@/tools/generateRandomString';
@@ -22,6 +21,7 @@ import { getSharingFacebook } from '@/tools/social-share/sharers/facebook';
 import { newTab } from '@/tools/linkHelpers';
 import encodeParams from '@/tools/social-share/utils/encodeParams';
 
+import { AutoplayModule } from './components/AutoplayModule/AutoplayModule';
 import { CircleProgressBar } from './components/CircleProgressBar/CircleProgressBar';
 import { texts } from './data/texts';
 import { emojis } from './data/emojis';
@@ -37,10 +37,10 @@ import {
   RestartButtonContainer,
   GameBottomButtonsContainer,
   GameBoardSizeButtonContainer,
-  GameBoardSizeButtonsContainer,
   BackLinkContainer,
   PageWrapper,
   ClockStatContainer,
+  GameBoardSizeButtonsContainerWithTooltip,
 } from './page.styled';
 
 export const metadata: Metadata = {
@@ -53,6 +53,7 @@ const devConfig = {
   clockStat: {
     showStaticValues: false,
   },
+  allowAutoplay: true,
 };
 
 type AllowedSearchParams = 'seed' | 'size' | 'moves' | 'pending' | 'enabled' | 'startedAt';
@@ -66,11 +67,9 @@ export default function Memory({
 }: {
   searchParams: Partial<Record<AllowedSearchParams, string>>;
 }) {
-  const { seed } = searchParams;
+  const seed = searchParams.seed ?? generateRandomString();
   const actionResetHref = `?seed=${generateRandomString()}` as const;
-  if (!seed) {
-    redirect(actionResetHref);
-  }
+
   const { startedAt, enabled: enabledString, pending: pendingString } = searchParams;
 
   const boardSize = searchParams.size ? Number(searchParams.size) : searchParamsDefaults.size;
@@ -121,16 +120,21 @@ export default function Memory({
               <p>{Math.floor(moves + 1)}</p>
             </div>
           </MovesStatContainer>
-          <ClockStat currentStartedAt={currentStartedAt} isGameStarted={isGameStarted} />
+          <ClockStat
+            currentStartedAt={currentStartedAt}
+            isGameStarted={isGameStarted}
+            moves={moves}
+          />
           <RestartButtonContainer aria-disabled={!isGameStarted}>
-            <Link href={actionResetHref} scroll={false} tabIndex={!isGameStarted ? -1 : undefined}>
+            <GameLink href={actionResetHref} noFocus={!isGameStarted} accessKey="r" title="Restart">
               <FaRepeat />
-            </Link>
+            </GameLink>
           </RestartButtonContainer>
         </GameTopButtonsContainer>
         <CardsContainer
           boardSize={boardSize}
           data-animate={!isGameStarted && boardSize <= searchParamsDefaults.size}
+          data-animate-win={hasWon && boardSize <= searchParamsDefaults.size}
           role="grid"
         >
           {cards.map((card) => (
@@ -152,9 +156,7 @@ export default function Memory({
             />
           ))}
         </CardsContainer>
-        <GameBottomButtonsContainer
-          title={isGameStarted ? 'Reset the game to change board size' : undefined}
-        >
+        <GameBottomButtonsContainer>
           <p>
             <FaChessBoard />
             {boardSize}x{boardSize}
@@ -164,7 +166,6 @@ export default function Memory({
               isGameStarted,
               boardSize,
               seed,
-              moves,
               pendingString,
               enabledString,
             }}
@@ -173,7 +174,7 @@ export default function Memory({
         </GameBottomButtonsContainer>
       </GameContainer>
       <BackLinkContainer>
-        <Link href="/">
+        <Link href="/" accessKey="q">
           <FaArrowLeftLong />
           Games without JS
         </Link>
@@ -189,6 +190,7 @@ export default function Memory({
         />
       )}
       <WinModal {...{ hasWon, moves, startedAt, cardCount, actionResetHref }} />
+      {devConfig.allowAutoplay && process.env.NODE_ENV !== 'production' && <AutoplayModule />}
     </PageWrapper>
   );
 }
@@ -233,7 +235,7 @@ function Card({
         key={card.index}
         role="gridcell"
         data-rotated
-        aria-selected
+        aria-selected={isPending && !doPendingMatch && !doPendingMismatch}
         data-just-matched={isPending && doPendingMatch}
         data-just-mismatched={isPending && doPendingMismatch}
         aria-invalid={isPending && doPendingMismatch}
@@ -249,52 +251,46 @@ function Card({
 
   return (
     <CardContainer key={card.index} role="gridcell" data-rotated={false} aria-selected={false}>
-      <Link
-        href={`?${encodeParams({
+      <GameLink
+        query={{
           seed,
           size: boardSize,
           pending: newPendingString,
           enabled: newEnabledString,
           moves: nextMoves,
           startedAt: currentStartedAt,
-        })}`}
-        scroll={false}
+        }}
+        aria-label={`Rotate card ${card.index + 1}`}
       />
     </CardContainer>
   );
 }
 
 /**
- * BUG: the animation would get out of sync when JS is enabled, because Next.js updates the animation delay, but the animation itself stays the same (does not reset).
+ * Beware, cursed code: the animation would get out of sync when JS is enabled, because Next.js updates the animation delay, but the animation itself stays the same (does not reset).
  *
- * So I paused the animation altogether when JS is enabled.
- *
- * P.S. I made a clock that only works without JS. Just the sound of that phrase...
+ * When I first encountered this, I paused the animation altogether when JS is enabled.
+ * But now, I'm duplicating the animation instead (with no changes but the name), and alternating between the `animation-name`s based on a trigger (`animationTrigger`) that is certain to change whenever the `animation-delay` (`skipMs`) changes.
  */
 function ClockStat({
   currentStartedAt,
   isGameStarted,
+  moves,
 }: {
   currentStartedAt: string | number | undefined;
   isGameStarted: boolean;
+  moves: number;
 }) {
   const msPlayed = currentStartedAt ? Date.now() - Number(currentStartedAt) : 0;
 
   return (
-    <ClockStatContainer skipMs={msPlayed} data-animate={isGameStarted}>
+    <ClockStatContainer
+      skipMs={msPlayed}
+      data-animate={isGameStarted}
+      animationTrigger={(moves * 2) % 2 === 0}
+      animationTriggerNamePostfix={ClockStatContainer.__linaria.className}
+    >
       {devConfig.clockStat.showStaticValues && <ClockStatStaticValues msPlayed={msPlayed} />}
-      <noscript style={{ display: 'none' }}>
-        <style>
-          {`
-            .${ClockStatContainer.__linaria.className}::before {
-              animation-play-state: running !important;
-            }
-            .${ClockStatContainer.__linaria.className}::after {
-              animation-play-state: running !important;
-            }
-          `}
-        </style>
-      </noscript>
     </ClockStatContainer>
   );
 }
@@ -360,14 +356,12 @@ function GameBoardSizeButtons({
   isGameStarted,
   boardSize,
   seed,
-  moves,
   pendingString,
   enabledString,
 }: {
   isGameStarted: boolean;
   boardSize: number;
   seed: string;
-  moves: number;
   pendingString: string | undefined;
   enabledString: string | undefined;
 }) {
@@ -378,36 +372,39 @@ function GameBoardSizeButtons({
   const isIncreaseButtonDisabled = boardSizeIfIncreased ** 2 / 2 > emojis.length;
 
   return (
-    <GameBoardSizeButtonsContainer aria-disabled={isGameStarted}>
+    <GameBoardSizeButtonsContainerWithTooltip
+      aria-disabled={isGameStarted}
+      data-text={isGameStarted ? 'Finish the game to change board size' : undefined}
+    >
       <GameBoardSizeButtonContainer role="button" aria-disabled={isDecreaseButtonDisabled}>
-        <Link
-          href={`?${encodeParams({
+        <GameLink
+          query={{
             seed,
             size: boardSize - boardSizeStep,
             pending: pendingString,
             enabled: enabledString,
-          })}`}
-          scroll={false}
-          tabIndex={isDecreaseButtonDisabled || isGameStarted ? -1 : undefined}
+          }}
+          noFocus={isDecreaseButtonDisabled || isGameStarted}
+          accessKey="-"
         >
           -
-        </Link>
+        </GameLink>
       </GameBoardSizeButtonContainer>
       <GameBoardSizeButtonContainer role="button" aria-disabled={isIncreaseButtonDisabled}>
-        <Link
-          href={`?${encodeParams({
+        <GameLink
+          query={{
             seed,
             size: boardSizeIfIncreased,
             pending: pendingString,
             enabled: enabledString,
-          })}`}
-          scroll={false}
-          tabIndex={isIncreaseButtonDisabled || isGameStarted ? -1 : undefined}
+          }}
+          noFocus={isIncreaseButtonDisabled || isGameStarted}
+          accessKey="="
         >
           +
-        </Link>
+        </GameLink>
       </GameBoardSizeButtonContainer>
-    </GameBoardSizeButtonsContainer>
+    </GameBoardSizeButtonsContainerWithTooltip>
   );
 }
 
@@ -449,9 +446,7 @@ function WinModal({
               card.
             </p>
             <p>{"Let's go again?"}</p>
-            <Link href={actionResetHref} scroll={false}>
-              Play
-            </Link>
+            <GameLink href={actionResetHref}>Play</GameLink>
           </>
         )}
       </section>
@@ -556,29 +551,27 @@ function DevOnlyMenu({
       <p>Dev-only menu:</p>
       <ul>
         <DevOnlyMenuLi aria-disabled={enabledString === enableAllEnabledString}>
-          <Link
-            href={`?${encodeParams({
+          <GameLink
+            query={{
               seed,
               size: boardSize,
               enabled: enableAllEnabledString,
               moves: nextMoves,
-            })}`}
-            scroll={false}
+            }}
           >
             Enable all
-          </Link>
+          </GameLink>
         </DevOnlyMenuLi>
         <li>
-          <Link
-            href={`?${encodeParams({
+          <GameLink
+            query={{
               seed,
               size: boardSize,
               moves: nextMoves,
-            })}`}
-            scroll={false}
+            }}
           >
             Disable all
-          </Link>
+          </GameLink>
         </li>
       </ul>
 
@@ -592,4 +585,42 @@ function DevOnlyMenu({
       </div>
     </section>
   );
+}
+
+/** A helper wrapper around `next/link` */
+function GameLink<RouteType>({
+  noFocus,
+  accessKey,
+  href,
+  query,
+  ...rest
+}: (Omit<LinkProps<RouteType>, 'href'> &
+  (
+    | { href?: never; query: Parameters<typeof createGameQuery>[0] }
+    | { href: LinkProps<RouteType>['href']; query?: never }
+  )) & { noFocus?: boolean }): JSX.Element {
+  return (
+    <Link
+      href={href ?? createGameQuery(query!)}
+      tabIndex={noFocus ? -1 : undefined}
+      accessKey={noFocus ? undefined : accessKey}
+      scroll={false}
+      {...rest}
+    />
+  );
+}
+
+function createGameQuery(
+  params: Partial<Record<AllowedSearchParams, string | number | undefined>>,
+) {
+  const paramsWithoutDefaults = Object.fromEntries(
+    Object.entries(params).filter(([key, value]) => {
+      const defaultValue =
+        key in searchParamsDefaults
+          ? searchParamsDefaults[key as Extract<AllowedSearchParams, 'size' | 'moves'>]
+          : undefined;
+      return !defaultValue || defaultValue !== value;
+    }),
+  );
+  return `?${encodeParams(paramsWithoutDefaults)}` as const;
 }
