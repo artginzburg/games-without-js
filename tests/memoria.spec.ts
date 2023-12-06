@@ -56,6 +56,17 @@ test.describe.serial('autoplay', async () => {
     }
   });
 
+  test('back and forward navigation', async () => {
+    await page.goBack();
+    await page.goBack();
+
+    const anyNonRotatedCard = await page.waitForSelector('[data-rotated="false"]');
+    expect(await anyNonRotatedCard.isVisible()).toBe(true);
+
+    await page.goForward();
+    await page.goForward();
+  });
+
   test('clicking Play from winning screen resets the game', async () => {
     await page.getByText('Play').click();
 
