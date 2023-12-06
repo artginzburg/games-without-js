@@ -9,12 +9,14 @@
 - [x] "Pending" card style
 - [ ] Stop the clock after winning (visually). Not that it's really visible since the win modal blurs the background, but still visible a bit, so stopping just for the polished feel seems necessary.
 - [ ] Stop the clock after winning (actually), possibly via a redirect to `?...&finishedAt=Date.now()`.
-- [ ] Rating system for each stat type. E.g. for moves: 3 stars is 12-14 moves with 16 cards; 2 stars is N moves = N cards; 1 star is therefore 20 moves with 16 cards; and 0 stars is more moves than that. But actually 3 stars should be equal to "perfect", as in "no misses that could be avoided". When winning with "perfect", the win modal should say "OCD!" (as in Obsessive Completion Distinction).
+- [ ] Rating system for each stat type. E.g. for moves: 3 stars is 12-14 moves with 16 cards; 2 stars is N moves = N cards; 1 star is therefore 20 moves with 16 cards; and 0 stars is more moves than that. But actually 3 stars should be equal to "perfect", as in "no misses that could be avoided". When winning with "perfect", the win modal should say "OCD!" (as in Obsessive Completion Distinction). UPD: the amount of moves depends on RNG and random choices made by the player, so it cannot be used as a reliable way to determine the amount of mistakes.
+- [ ] Track cards that were already seen but not matched in a separate state named `peeked`. It can be used later to display Hints. It can also be used to calculate the amount of mistakes (for rating).
 - [ ] (Dev mode) make a button to replay with the same seed and size.
 
 ## Ideas
 
 - Make it possible to require 3, 4, 5 or whatever more cards to match.
+- Hints: optional toggle. When enabled, and the pending sequence is not complete, the cards that were already peeked and do not match the pending sequence become marked in some way. Obviously, the matching card should never be marked.
 
 ### Similar games from the Internet
 
