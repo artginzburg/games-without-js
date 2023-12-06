@@ -255,6 +255,19 @@ export const GameBoardSizeButtonsContainer = styled.div`
       ${commonDisabledButtonStyles}
     }
   }
+
+  &[aria-disabled='false'] {
+    > div {
+      transition-property: transform;
+      transition-duration: 0.5s;
+      &[aria-disabled='false'] {
+        &:active {
+          transform: scale(0.8);
+          transition-duration: 0s;
+        }
+      }
+    }
+  }
 `;
 export const GameBoardSizeButtonContainer = styled.div`
   border-radius: 9999px;
