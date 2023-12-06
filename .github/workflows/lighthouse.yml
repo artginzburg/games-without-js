@@ -1,8 +1,8 @@
-name: CI
+name: Lighthouse
 on: [push]
 jobs:
   ci_setup:
-    name: CI setup
+    name: Wait for Vercel
     runs-on: ubuntu-latest
     outputs:
       preview_url: ${{ steps.waitForVercelPreviewDeployment.outputs.url }}
@@ -17,7 +17,7 @@ jobs:
       - run: echo ${{steps.waitForVercelPreviewDeployment.outputs.url}}
 
   lhci:
-    name: Lighthouse
+    name: CI
     needs: ci_setup
     runs-on: ubuntu-latest
     steps:

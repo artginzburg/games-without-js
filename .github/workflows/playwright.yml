@@ -1,11 +1,12 @@
-name: Playwright Tests
+name: Playwright
 on:
   push:
-    branches: [main, master, testing]
+    branches: [main, master]
   pull_request:
-    branches: [main, master, testing]
+    branches: [main, master]
 jobs:
   test:
+    name: E2E Tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
