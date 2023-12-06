@@ -57,7 +57,14 @@ const devConfig = {
   allowSmallestBoardSize: true,
 };
 
-type AllowedSearchParams = 'seed' | 'size' | 'moves' | 'pending' | 'enabled' | 'startedAt';
+type AllowedSearchParams =
+  | 'seed'
+  | 'size'
+  | 'moves'
+  | 'pending'
+  | 'enabled'
+  | 'startedAt'
+  | 'finishedAt';
 const searchParamsDefaults: Record<Extract<AllowedSearchParams, 'size' | 'moves'>, number> = {
   size: 4,
   moves: 0,
@@ -71,7 +78,7 @@ export default function Memory({
   const seed = searchParams.seed ?? generateRandomString();
   const actionResetHref = `?seed=${generateRandomString()}` as const;
 
-  const { startedAt, enabled: enabledString, pending: pendingString } = searchParams;
+  const { startedAt, finishedAt, enabled: enabledString, pending: pendingString } = searchParams;
 
   const boardSize = searchParams.size ? Number(searchParams.size) : searchParamsDefaults.size;
   const moves = searchParams.moves ? Number(searchParams.moves) : searchParamsDefaults.moves;
@@ -101,6 +108,10 @@ export default function Memory({
   /** @todo use encryptNumber() with seed as key for this. */
   const newStartedAt = isGameStarted && moves < 1 ? Date.now() : undefined;
   const currentStartedAt = newStartedAt ?? startedAt;
+
+  const shouldStopClock = getShouldStopClock(currentEnabled, pendingIndexes, cards);
+  const newFinishedAt = shouldStopClock ? Date.now() : undefined;
+  const currentFinishedAt = newFinishedAt ?? finishedAt;
 
   return (
     <PageWrapper>
@@ -154,6 +165,7 @@ export default function Memory({
               newEnabledString={newEnabledString}
               nextMoves={nextMoves}
               currentStartedAt={currentStartedAt}
+              currentFinishedAt={currentFinishedAt}
             />
           ))}
         </CardsContainer>
@@ -190,10 +202,19 @@ export default function Memory({
           searchParams={searchParams}
         />
       )}
-      <WinModal {...{ hasWon, moves, startedAt, cardCount, actionResetHref }} />
+      <WinModal {...{ hasWon, moves, startedAt, finishedAt, cardCount, actionResetHref }} />
       {devConfig.allowAutoplay && process.env.NODE_ENV !== 'production' && <AutoplayModule />}
     </PageWrapper>
   );
+}
+
+function getShouldStopClock(
+  currentEnabled: Set<number>,
+  pendingIndexes: number[] | undefined,
+  cards: MemoryCard[],
+) {
+  const totalRotatedQuantity = currentEnabled.size + (pendingIndexes?.length ?? 0);
+  return totalRotatedQuantity > cards.length - 2;
 }
 
 function Card({
@@ -211,6 +232,7 @@ function Card({
   newEnabledString,
   nextMoves,
   currentStartedAt,
+  currentFinishedAt,
 }: {
   card: MemoryCard;
   currentEnabled: Set<number>;
@@ -226,6 +248,7 @@ function Card({
   newEnabledString: string | undefined;
   nextMoves: number;
   currentStartedAt: string | number | undefined;
+  currentFinishedAt: string | number | undefined;
 }) {
   const isEnabled = currentEnabled.has(card.index);
   const isPending = pendingIndexes?.includes(card.index);
@@ -260,6 +283,7 @@ function Card({
           enabled: newEnabledString,
           moves: nextMoves,
           startedAt: currentStartedAt,
+          finishedAt: currentFinishedAt,
         }}
         aria-label={`Rotate card ${card.index + 1}`}
       />
@@ -415,17 +439,19 @@ function WinModal({
   hasWon,
   moves,
   startedAt,
+  finishedAt,
   cardCount,
   actionResetHref,
 }: {
   hasWon: boolean;
   moves: number;
   startedAt: string | undefined;
+  finishedAt: string | undefined;
   cardCount: number;
   actionResetHref: `?${string}`;
 }) {
   /** Caveat: if the page is refreshed, secondsPlayed becomes wrong, since it uses Date.now() directly. */
-  const secondsPlayed = startedAt ? (Date.now() - Number(startedAt)) / 1000 : undefined;
+  const secondsPlayed = startedAt ? (Number(finishedAt) - Number(startedAt)) / 1000 : undefined;
   const secondsPlayedString = secondsPlayed
     ? ` and ${roundToDecimals(secondsPlayed, 2)} seconds`
     : '';
