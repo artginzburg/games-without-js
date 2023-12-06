@@ -13,7 +13,7 @@ test('can be navigated to from home page', async ({ page }) => {
 
   await page.waitForURL('/memoria');
 
-  expect(page.getByRole('heading').textContent()).resolves.toBe('Memoria');
+  await expect(page.getByRole('heading').textContent()).resolves.toBe('Memoria');
 });
 
 test.describe.serial('autoplay', async () => {
