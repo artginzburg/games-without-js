@@ -54,6 +54,7 @@ const devConfig = {
     showStaticValues: false,
   },
   allowAutoplay: true,
+  allowSmallestBoardSize: true,
 };
 
 type AllowedSearchParams = 'seed' | 'size' | 'moves' | 'pending' | 'enabled' | 'startedAt';
@@ -368,7 +369,9 @@ function GameBoardSizeButtons({
   const boardSizeStep = 2;
   const boardSizeIfIncreased = boardSize + boardSizeStep;
 
-  const isDecreaseButtonDisabled = boardSize <= 2;
+  const minimumBoardSize =
+    process.env.NODE_ENV === 'development' && devConfig.allowSmallestBoardSize ? 2 : 4;
+  const isDecreaseButtonDisabled = boardSize <= minimumBoardSize;
   const isIncreaseButtonDisabled = boardSizeIfIncreased ** 2 / 2 > emojis.length;
 
   return (
