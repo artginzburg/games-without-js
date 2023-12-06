@@ -6,6 +6,16 @@ test('has title', async ({ page }) => {
   await expect(page).toHaveTitle(/Memoria/);
 });
 
+test('can be navigated to from home page', async ({ page }) => {
+  await page.goto('');
+
+  await page.getByRole('link', { name: 'memoria' }).click();
+
+  await page.waitForURL('/memoria');
+
+  expect(page.getByRole('heading').textContent()).resolves.toBe('Memoria');
+});
+
 test.describe.serial('autoplay', async () => {
   let page: Page;
 
@@ -22,7 +32,18 @@ test.describe.serial('autoplay', async () => {
 
     await page.waitForLoadState('networkidle');
 
-    await page.keyboard.press('A');
+    let hidden = true;
+    let retries = 0;
+    do {
+      retries++;
+      await page.keyboard.press('A');
+      try {
+        const anyRotatedCard = await page.waitForSelector('[data-rotated="true"]', {
+          timeout: 200,
+        });
+        hidden = await anyRotatedCard.isHidden();
+      } catch {}
+    } while (hidden && retries <= 5);
 
     await expect(page.getByText('Grats!')).toBeVisible();
   });
