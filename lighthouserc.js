@@ -1,7 +1,12 @@
 const { COLLECT_BASE_URL } = process.env;
 
-console.log('env', process.env);
-console.log('COLLECT_BASE_URL', COLLECT_BASE_URL);
+const localUrl = 'http://localhost:3000';
+const routesToAnalyze = ['/', '/memoria'];
+const localCollectUrls = routesToAnalyze.map((route) => `${localUrl}${route}`);
+
+const collectUrls = COLLECT_BASE_URL
+  ? [...routesToAnalyze.map((route) => `${COLLECT_BASE_URL}${route}`), ...localCollectUrls]
+  : localCollectUrls;
 
 module.exports = {
   ci: {
@@ -11,7 +16,7 @@ module.exports = {
     collect: {
       startServerCommand: 'npm run start',
       startServerReadyPattern: 'ready on',
-      url: ['http://localhost:3000/', 'http://localhost:3000/memoria'],
+      url: collectUrls,
       numberOfRuns: 3,
     },
   },
