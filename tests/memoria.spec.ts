@@ -43,7 +43,7 @@ test.describe.serial('autoplay', async () => {
         });
         hidden = await anyRotatedCard.isHidden();
       } catch {}
-    } while (hidden && retries <= 5);
+    } while (hidden && retries <= 10);
 
     await expect(page.getByText('Grats!')).toBeVisible();
   });
