@@ -1,0 +1,46 @@
+name: Lighthouse
+on: [push]
+jobs:
+  ci_setup:
+    name: Wait for Vercel
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.waitForVercelPreviewDeployment.outputs.url }}
+    steps:
+      - name: Wait for Vercel preview deployment to be ready
+        uses: patrickedqvist/wait-for-vercel-preview@v1.3.1
+        id: waitForVercelPreviewDeployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 600
+
+      - run: echo ${{steps.waitForVercelPreviewDeployment.outputs.url}}
+
+  lhci:
+    name: CI
+    needs: ci_setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Install PNPM
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        if: needs.ci_setup.outputs.preview_url == ''
+        run: pnpm install
+
+      - name: Build
+        if: needs.ci_setup.outputs.preview_url == ''
+        run: pnpm build
+
+      - name: run Lighthouse CI
+        run: pnpm dlx @lhci/cli@0.12.x autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          COLLECT_BASE_URL: ${{ needs.ci_setup.outputs.preview_url }}
