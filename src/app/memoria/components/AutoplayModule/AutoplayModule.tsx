@@ -30,52 +30,9 @@ export function AutoplayModule() {
     displayETA(grid);
     clickUnknownNodeOrFinish();
 
-    /**
-     * (Old, not actualized) Observer logic:
-     * 1. If the node has an already known match — get and click the matching node.
-     * 2. If the node itself is already known — then it was clicked by being a known match for another node from stage 5.1, so skip it.
-     * 3. If not either of the above, store the content of the node and get back to stage 3
-     * * The new Observer logic works a bit differently, but I did not explain it here yet.
-     */
     function observeAllNodes() {
       const observer = new MutationObserver((mutationsList) => {
-        mutationsList.forEach((mutation) => {
-          if (mutation.addedNodes.length === 0) {
-            // Skipping any node that caused a mutation by "hiding". Nodes that were "shown" (rotated) can proceed.
-            return;
-          }
-
-          const content = mutation.addedNodes[0].textContent;
-          if (!content) {
-            // Content is not present if the addedNode is an anchor tag (<a/>). Which means that a node also caused a mutation by hiding.
-            return;
-          }
-
-          const htmlElement = mutation.target as HTMLElement;
-          const index = getElementIndex(htmlElement);
-
-          //#region Support for starting out of "pending" and "just-mismatched" states. Without this, autoplay will only work for starting states "game start" and "just-matched"
-          if (knownPairs.has(content)) {
-            const isMatched = getIsAttributeTrue(htmlElement, 'data-just-matched');
-            if (isMatched) {
-              clickUnknownNodeOrFinish();
-              return;
-            }
-
-            const thisPairFromKnown = knownPairs.get(content)!; // NonNullable since it's already checked as the condition for this scope.
-            const isMismatched = getIsAttributeTrue(htmlElement, 'data-just-mismatched');
-            if (isMismatched) {
-              knownPairs.set(content, [index]);
-            }
-            clickNode(grid.children[thisPairFromKnown[0]]); // Notice the usage of the old value of `thisPairFromKnown`, not the one that was just set if justMismatched was 'true'.
-            return;
-          }
-          //#endregion
-
-          // Scenario 5.3 — store the content, return to stage 3
-          knownPairs.set(content, [index]);
-          clickUnknownNodeOrFinish();
-        });
+        mutationsList.forEach(handleMutation);
       });
 
       observer.observe(grid, {
@@ -85,6 +42,49 @@ export function AutoplayModule() {
 
       return observer;
     }
+
+    /**
+     * (Old, not actualized) Observer logic:
+     * 1. If the node has an already known match — get and click the matching node.
+     * 2. If the node itself is already known — then it was clicked by being a known match for another node from stage 5.1, so skip it.
+     * 3. If not either of the above, store the content of the node and get back to stage 3
+     * * The new Observer logic works a bit differently, but I did not explain it here yet.
+     */
+    function handleMutation(mutation: MutationRecord): void {
+      if (mutation.addedNodes.length === 0) return; // Skipping any node that caused a mutation by "hiding". Nodes that were "shown" (rotated) can proceed.
+
+      const content = mutation.addedNodes[0].textContent;
+      if (!content) return; // Content is not present if the addedNode is an anchor tag (<a/>). Which means that a node also caused a mutation by hiding.
+
+      const htmlElement = mutation.target as HTMLElement;
+      const index = getElementIndex(htmlElement);
+
+      if (knownPairs.has(content)) {
+        handleKnownPair(htmlElement, content, index);
+        return;
+      }
+
+      // Scenario 3 — store the content, return to Autoplay Logic stage 3
+      knownPairs.set(content, [index]);
+      clickUnknownNodeOrFinish();
+    }
+
+    /** Implements support for starting out of "pending" and "just-mismatched" states. Without this, autoplay will only work for starting states "game start" and "just-matched" */
+    function handleKnownPair(htmlElement: HTMLElement, content: string, index: number) {
+      const isMatched = getIsAttributeTrue(htmlElement, 'data-just-matched');
+      if (isMatched) {
+        clickUnknownNodeOrFinish();
+        return;
+      }
+
+      const thisPairFromKnown = knownPairs.get(content)!; // NonNullable since it's already checked as the condition for this scope.
+      const isMismatched = getIsAttributeTrue(htmlElement, 'data-just-mismatched');
+      if (isMismatched) {
+        knownPairs.set(content, [index]);
+      }
+      clickNode(grid.children[thisPairFromKnown[0]]); // Notice the usage of the old value of `thisPairFromKnown`, not the one that was just set if justMismatched was 'true'.
+    }
+
     function findClickableUnknownNode() {
       const knownPairsValues = new Set([...knownPairs.values()].flat());
 
