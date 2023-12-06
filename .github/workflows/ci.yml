@@ -1,6 +1,19 @@
 name: CI
 on: [push]
 jobs:
+  ci_setup:
+    name: CI setup
+    runs-on: ubuntu-latest
+    outputs:
+      preview_url: ${{ steps.waitForVercelPreviewDeployment.outputs.url }}
+    steps:
+      - name: Wait for Vercel preview deployment to be ready
+        uses: patrickedqvist/wait-for-vercel-preview@1.2.0
+        id: waitForVercelPreviewDeployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          max_timeout: 600
+
   lhci:
     name: Lighthouse
     runs-on: ubuntu-latest
@@ -22,3 +35,4 @@ jobs:
         run: pnpm dlx @lhci/cli@0.12.x autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          COLLECT_BASE_URL: ${{ needs.ci_setup.outputs.preview_url }}
