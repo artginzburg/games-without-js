@@ -42,6 +42,10 @@ import {
   ClockStatContainer,
   GameBoardSizeButtonsContainerWithTooltip,
 } from './page.styled';
+import { handleSearchParamMistakes } from './features/mistakes/handlers';
+import { MemoryCard } from './types';
+import { handleSearchParamSeen } from './features/seen/handlers';
+import { WinModalStars } from './features/stars/components/WinModalStars/WinModalStars';
 
 export const metadata: Metadata = {
   title: texts.title,
@@ -64,10 +68,16 @@ type AllowedSearchParams =
   | 'pending'
   | 'enabled'
   | 'startedAt'
-  | 'finishedAt';
-const searchParamsDefaults: Record<Extract<AllowedSearchParams, 'size' | 'moves'>, number> = {
+  | 'finishedAt'
+  | 'seen'
+  | 'mistakes';
+const searchParamsDefaults: Record<
+  Extract<AllowedSearchParams, 'size' | 'moves' | 'mistakes'>,
+  number
+> = {
   size: 4,
   moves: 0,
+  mistakes: 0,
 };
 
 export default function Memory({
@@ -78,10 +88,19 @@ export default function Memory({
   const seed = searchParams.seed ?? generateRandomString();
   const actionResetHref = `?seed=${generateRandomString()}` as const;
 
-  const { startedAt, finishedAt, enabled: enabledString, pending: pendingString } = searchParams;
+  const {
+    startedAt,
+    finishedAt,
+    enabled: enabledString,
+    pending: pendingString,
+    seen,
+  } = searchParams;
 
   const boardSize = searchParams.size ? Number(searchParams.size) : searchParamsDefaults.size;
   const moves = searchParams.moves ? Number(searchParams.moves) : searchParamsDefaults.moves;
+  const mistakes = searchParams.mistakes
+    ? Number(searchParams.mistakes)
+    : searchParamsDefaults.mistakes;
 
   const cardCount = boardSize ** 2;
   const { cards, cardContentShuffled } = generateCardsAndContent(seed, cardCount);
@@ -112,6 +131,22 @@ export default function Memory({
   const shouldStopClock = getShouldStopClock(currentEnabled, pendingIndexes, cards);
   const newFinishedAt = shouldStopClock ? Date.now() : undefined;
   const currentFinishedAt = newFinishedAt ?? finishedAt;
+
+  const { previousSeen, newSeenString } = handleSearchParamSeen(
+    seen,
+    currentEnabled,
+    pendingIndexes,
+    shouldStopClock,
+  );
+
+  const currentMistakes = handleSearchParamMistakes(
+    pendingIndexes,
+    cards,
+    isPendingSequenceComplete,
+    doPendingMismatch,
+    previousSeen,
+    mistakes,
+  );
 
   return (
     <PageWrapper>
@@ -166,6 +201,8 @@ export default function Memory({
               nextMoves={nextMoves}
               currentStartedAt={currentStartedAt}
               currentFinishedAt={currentFinishedAt}
+              newSeenString={newSeenString}
+              currentMistakes={currentMistakes}
             />
           ))}
         </CardsContainer>
@@ -202,7 +239,9 @@ export default function Memory({
           searchParams={searchParams}
         />
       )}
-      <WinModal {...{ hasWon, moves, startedAt, finishedAt, cardCount, actionResetHref }} />
+      <WinModal
+        {...{ hasWon, moves, startedAt, finishedAt, cardCount, actionResetHref, currentMistakes }}
+      />
       {devConfig.allowAutoplay && process.env.NODE_ENV !== 'production' && <AutoplayModule />}
     </PageWrapper>
   );
@@ -233,6 +272,9 @@ function Card({
   nextMoves,
   currentStartedAt,
   currentFinishedAt,
+
+  newSeenString,
+  currentMistakes,
 }: {
   card: MemoryCard;
   currentEnabled: Set<number>;
@@ -249,6 +291,9 @@ function Card({
   nextMoves: number;
   currentStartedAt: string | number | undefined;
   currentFinishedAt: string | number | undefined;
+
+  newSeenString: string;
+  currentMistakes: number;
 }) {
   const isEnabled = currentEnabled.has(card.index);
   const isPending = pendingIndexes?.includes(card.index);
@@ -284,6 +329,8 @@ function Card({
           moves: nextMoves,
           startedAt: currentStartedAt,
           finishedAt: currentFinishedAt,
+          seen: newSeenString,
+          mistakes: currentMistakes,
         }}
         aria-label={`Rotate card ${card.index + 1}`}
       />
@@ -348,13 +395,6 @@ function generateCardsAndContent(seed: string, cardCount: number) {
 
   return { cards, cardContentShuffled };
 }
-
-type MemoryCard = {
-  /** Unique to a pair of cards and unknown to the player */
-  id: number;
-  /** Numerical order of the card, can range from 0 to cardCount - 1 */
-  index: number;
-};
 
 function GameCircleProgressBar({
   currentEnabled,
@@ -442,6 +482,7 @@ function WinModal({
   finishedAt,
   cardCount,
   actionResetHref,
+  currentMistakes,
 }: {
   hasWon: boolean;
   moves: number;
@@ -449,8 +490,7 @@ function WinModal({
   finishedAt: string | undefined;
   cardCount: number;
   actionResetHref: `?${string}`;
-}) {
-  /** Caveat: if the page is refreshed, secondsPlayed becomes wrong, since it uses Date.now() directly. */
+} & Parameters<typeof WinModalStars>[0]) {
   const secondsPlayed = startedAt ? (Number(finishedAt) - Number(startedAt)) / 1000 : undefined;
   const secondsPlayedString = secondsPlayed
     ? ` and ${roundToDecimals(secondsPlayed, 2)} seconds`
@@ -466,6 +506,7 @@ function WinModal({
           <>
             <h2>Grats!</h2>
             <AnimatedEmojiPartyPooper />
+            <WinModalStars currentMistakes={currentMistakes} />
             <p>
               {moves} {declinationOfNum(moves, ['move', 'moves', 'moves'])}
               {secondsPlayedString} with {cardCount} cards.
@@ -627,7 +668,7 @@ function GameLink<RouteType>({
   (
     | { href?: never; query: Parameters<typeof createGameQuery>[0] }
     | { href: LinkProps<RouteType>['href']; query?: never }
-  )) & { noFocus?: boolean }): JSX.Element {
+  )) & { noFocus?: boolean }): React.JSX.Element {
   return (
     <Link
       href={href ?? createGameQuery(query!)}
@@ -648,7 +689,7 @@ function createGameQuery(
         key in searchParamsDefaults
           ? searchParamsDefaults[key as Extract<AllowedSearchParams, 'size' | 'moves'>]
           : undefined;
-      return !defaultValue || defaultValue !== value;
+      return defaultValue === undefined || defaultValue !== value;
     }),
   );
   return `?${encodeParams(paramsWithoutDefaults)}` as const;
