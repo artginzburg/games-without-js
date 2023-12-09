@@ -4,6 +4,7 @@ import { FaTelegramPlane } from 'react-icons/fa';
 import {
   FaArrowLeftLong,
   FaChessBoard,
+  FaCirclePlay,
   FaFacebookF,
   FaRepeat,
   FaShoePrints,
@@ -11,6 +12,7 @@ import {
 } from 'react-icons/fa6';
 import Link, { LinkProps } from 'next/link';
 
+import winModalDropImage from '@/images/memoria_winmodal_drop.svg';
 import { deterministicShuffle } from '@/tools/deterministicShuffle';
 import { generateRandomString } from '@/tools/generateRandomString';
 import { declinationOfNum } from '@/tools/declinationOfNum';
@@ -41,6 +43,9 @@ import {
   PageWrapper,
   ClockStatContainer,
   GameBoardSizeButtonsContainerWithTooltip,
+  WinModalPlayButton,
+  WinModalPLayButtonAndDropContainer,
+  WinModalStatsContainer,
 } from './page.styled';
 import { handleSearchParamMistakes } from './features/mistakes/handlers';
 import { MemoryCard } from './types';
@@ -504,22 +509,33 @@ function WinModal({
       <section role="alertdialog" aria-modal>
         {hasWon && (
           <>
-            <h2>Grats!</h2>
-            <AnimatedEmojiPartyPooper />
-            <WinModalStars currentMistakes={currentMistakes} />
-            <p>
-              {moves} {declinationOfNum(moves, ['move', 'moves', 'moves'])}
-              {secondsPlayedString} with {cardCount} cards.
-            </p>
-            <p>
-              {"That's"} {roundToDecimals(moves / cardCount, 1)} moves{secondPerCardString} per
-              card.
-            </p>
-            <p>{"Let's go again?"}</p>
-            <GameLink href={actionResetHref}>Play</GameLink>
+            <WinModalStatsContainer>
+              <h2>Grats!</h2>
+              <AnimatedEmojiPartyPooper />
+              <WinModalStars currentMistakes={currentMistakes} />
+              <p>
+                {moves} {declinationOfNum(moves, ['move', 'moves', 'moves'])}
+                {secondsPlayedString} with {cardCount} cards.
+              </p>
+              <p>
+                {"That's"} {roundToDecimals(moves / cardCount, 1)} moves{secondPerCardString} per
+                card.
+              </p>
+              <p>{"Let's go again?"}</p>
+            </WinModalStatsContainer>
+            <WinModalPLayButtonAndDropContainer>
+              {/* TODO is passHref necessary here? Seems to work the same with and without it. Removing legacyBehavior yields an error, but removing passHref does not. */}
+              <GameLink href={actionResetHref} legacyBehavior passHref>
+                <WinModalPlayButton title="Play">
+                  <FaCirclePlay />
+                </WinModalPlayButton>
+              </GameLink>
+              <Image src={winModalDropImage} alt="" height={33} />
+            </WinModalPLayButtonAndDropContainer>
           </>
         )}
       </section>
+
       <section role="alertdialog" aria-modal>
         {hasWon && (
           <WinModalSharingSectionContent

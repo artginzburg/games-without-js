@@ -632,10 +632,7 @@ export const DevOnlyMenuLi = styled.li`
 `;
 
 const winModalWidthPx = 280; // 230 initially. Set to 280 to exactly cover half of the outermost column of cards in 4x4 size.
-const playButtonCharactersQuantity = 4;
 const pxInRem = 16;
-const playButtonHoveredLetterSpacingPx =
-  (winModalWidthPx / playButtonCharactersQuantity - pxInRem * cardsContainerPaddingRem) / 1.5;
 
 export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
   position: absolute;
@@ -646,7 +643,6 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  row-gap: ${cardsContainerPaddingRem}rem;
 
   pointer-events: none;
   opacity: 0;
@@ -670,30 +666,10 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
     width: ${winModalWidthPx}px;
     max-width: 100%;
     max-height: 400px;
-    overflow-y: auto;
     margin-inline: ${cardsContainerPaddingRem}rem;
-    background: linear-gradient(#fff, #ddd);
-    color: #222;
-    border-radius: ${cardBorderRadiusRem * 2}rem;
 
     transition: transform 0.3s ${easings.easeOutBack};
     transform: scale(0);
-
-    &:first-child {
-      padding: ${cardsContainerPaddingRem}rem;
-      > a {
-        font-size: 2rem;
-        border-radius: ${cardBorderRadiusRem}rem;
-
-        margin-left: auto;
-        margin-top: 1rem;
-
-        transition: letter-spacing 0.7s;
-        &:hover {
-          letter-spacing: ${playButtonHoveredLetterSpacingPx}px;
-        }
-      }
-    }
 
     &:nth-child(2) {
       transition-delay: 0.3s;
@@ -707,6 +683,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
       align-items: center;
       column-gap: ${gapBetweenSmallRelatedElementsRem * 2}rem;
 
+      margin-top: ${cardsContainerPaddingRem}rem;
       padding-block: 0.15rem;
       padding-right: 0.2rem;
       padding-left: ${cardsContainerPaddingRem}rem;
@@ -735,6 +712,68 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
         }
       }
     }
+  }
+`;
+
+export const WinModalStatsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: ${cardsContainerPaddingRem}rem;
+  padding-bottom: ${33 + (cardsContainerPaddingRem / 2) * pxInRem}px;
+  background: linear-gradient(#fff, #ddd);
+  color: #222;
+  border-radius: ${cardBorderRadiusRem * 2}rem;
+`;
+
+export const WinModalPLayButtonAndDropContainer = styled.div`
+  position: relative;
+  margin-top: -0.5px; /* So that there's no glitchy half-pixel between the section background and this bottom part */
+  align-self: center;
+
+  > img {
+    transition: transform 0.3s;
+    transform-origin: top;
+  }
+`;
+export const WinModalPlayButton = styled.a`
+  font-size: 4rem;
+  overflow: visible;
+  z-index: 1;
+  text-align: center;
+
+  display: flex;
+  justify-content: center;
+
+  position: absolute;
+  align-self: center;
+  justify-self: center;
+  left: ${33 / 2 + 1.5}px;
+  bottom: 5px;
+
+  transition:
+    transform 0.3s,
+    opacity 0.3s;
+
+  ${mobileSafeHoverEffect(css`
+    transform: scale(1.3);
+    opacity: 0.9;
+
+    & + img {
+      transform: scale(1.3);
+    }
+  `)}
+
+  &:focus {
+    outline: transparent;
+  }
+
+  > svg {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 9999px;
+    color: #222;
+
+    transition: transform 0.3s;
   }
 `;
 
