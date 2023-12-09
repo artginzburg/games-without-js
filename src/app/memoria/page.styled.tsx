@@ -725,6 +725,14 @@ export const WinModalStatsContainer = styled.div`
   border-radius: ${cardBorderRadiusRem * 2}rem;
 `;
 
+const winModalPlayButtonAppearAnimation = css`
+  animation: playButtonAppear 0.6s;
+  @keyframes playButtonAppear {
+    from {
+      transform: scale(0);
+    }
+  }
+`;
 export const WinModalPLayButtonAndDropContainer = styled.div`
   position: relative;
   margin-top: -0.5px; /* So that there's no glitchy half-pixel between the section background and this bottom part */
@@ -733,6 +741,8 @@ export const WinModalPLayButtonAndDropContainer = styled.div`
   > img {
     transition: transform 0.3s;
     transform-origin: top;
+
+    ${winModalPlayButtonAppearAnimation}
   }
 `;
 export const WinModalPlayButton = styled.a`
@@ -749,6 +759,8 @@ export const WinModalPlayButton = styled.a`
   justify-self: center;
   left: ${33 / 2 + 1.5}px;
   bottom: 5px;
+
+  ${winModalPlayButtonAppearAnimation}
 
   transition:
     transform 0.3s,
