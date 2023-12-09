@@ -68,7 +68,7 @@ test.describe.serial('autoplay', async () => {
   });
 
   test('clicking Play from winning screen resets the game', async () => {
-    await page.getByText('Play').click();
+    await page.getByTitle('Play').click();
 
     for (const cell of await page.getByRole('gridcell').all()) {
       await expect(cell).toHaveAttribute('data-rotated', 'false');
