@@ -51,6 +51,8 @@ import { handleSearchParamMistakes } from './features/mistakes/handlers';
 import { MemoryCard } from './types';
 import { handleSearchParamSeen } from './features/seen/handlers';
 import { WinModalStars } from './features/stars/components/WinModalStars/WinModalStars';
+import { DevOptionsObject, DevOptionsFormat } from './features/devOnlyOptions/utils';
+import { parseSearchParamDevOptions } from './features/devOnlyOptions/handlers';
 
 export const metadata: Metadata = {
   title: texts.title,
@@ -75,7 +77,8 @@ type AllowedSearchParams =
   | 'startedAt'
   | 'finishedAt'
   | 'seen'
-  | 'mistakes';
+  | 'mistakes'
+  | 'devOptions';
 const searchParamsDefaults: Record<
   Extract<AllowedSearchParams, 'size' | 'moves' | 'mistakes'>,
   number
@@ -99,6 +102,7 @@ export default function Memory({
     enabled: enabledString,
     pending: pendingString,
     seen,
+    devOptions,
   } = searchParams;
 
   const boardSize = searchParams.size ? Number(searchParams.size) : searchParamsDefaults.size;
@@ -152,6 +156,8 @@ export default function Memory({
     previousSeen,
     mistakes,
   );
+
+  const devOptionsObject = parseSearchParamDevOptions(devOptions);
 
   return (
     <PageWrapper>
@@ -208,6 +214,8 @@ export default function Memory({
               currentFinishedAt={currentFinishedAt}
               newSeenString={newSeenString}
               currentMistakes={currentMistakes}
+              devOptions={devOptions}
+              devOptionsObject={devOptionsObject}
             />
           ))}
         </CardsContainer>
@@ -239,9 +247,9 @@ export default function Memory({
           seed={seed}
           boardSize={boardSize}
           cards={cards}
-          nextMoves={nextMoves}
           enabledString={enabledString}
           searchParams={searchParams}
+          devOptionsObject={devOptionsObject}
         />
       )}
       <WinModal
@@ -280,6 +288,9 @@ function Card({
 
   newSeenString,
   currentMistakes,
+
+  devOptions,
+  devOptionsObject,
 }: {
   card: MemoryCard;
   currentEnabled: Set<number>;
@@ -299,6 +310,9 @@ function Card({
 
   newSeenString: string;
   currentMistakes: number;
+
+  devOptions: string | undefined;
+  devOptionsObject: DevOptionsObject | undefined;
 }) {
   const isEnabled = currentEnabled.has(card.index);
   const isPending = pendingIndexes?.includes(card.index);
@@ -336,9 +350,12 @@ function Card({
           finishedAt: currentFinishedAt,
           seen: newSeenString,
           mistakes: currentMistakes,
+          devOptions,
         }}
         aria-label={`Rotate card ${card.index + 1}`}
-      />
+      >
+        {devOptionsObject?.showClosedContent ? cardContentShuffled[card.id] : null}
+      </GameLink>
     </CardContainer>
   );
 }
@@ -616,17 +633,19 @@ function AnimatedEmojiPartyPooper() {
 function DevOnlyMenu({
   seed,
   cards,
-  nextMoves,
   enabledString,
   searchParams,
   boardSize,
+
+  devOptionsObject,
 }: {
   seed: string;
   cards: MemoryCard[];
-  nextMoves: number;
   enabledString: string | undefined;
   searchParams: Record<string, string | undefined>;
   boardSize: number;
+
+  devOptionsObject: DevOptionsObject | undefined;
 }) {
   if (process.env.NODE_ENV !== 'development') return null;
 
@@ -634,7 +653,7 @@ function DevOnlyMenu({
 
   return (
     <section>
-      <p>Dev-only menu:</p>
+      <p>Dev-only actions:</p>
       <ul>
         <DevOnlyMenuLi aria-disabled={enabledString === enableAllEnabledString}>
           <GameLink
@@ -642,23 +661,49 @@ function DevOnlyMenu({
               seed,
               size: boardSize,
               enabled: enableAllEnabledString,
-              moves: nextMoves,
             }}
           >
-            Enable all
+            FLip all cards
           </GameLink>
         </DevOnlyMenuLi>
-        <li>
+        <DevOnlyMenuLi aria-disabled={enabledString === '' || enabledString === undefined}>
           <GameLink
             query={{
               seed,
               size: boardSize,
-              moves: nextMoves,
             }}
           >
-            Disable all
+            Close all cards
           </GameLink>
-        </li>
+        </DevOnlyMenuLi>
+        <DevOnlyMenuLi>
+          <GameLink
+            query={{
+              seed,
+              size: boardSize,
+            }}
+          >
+            Replay with the same seed and size
+          </GameLink>
+        </DevOnlyMenuLi>
+      </ul>
+
+      <p style={{ marginTop: 20 }}>Dev-only options:</p>
+      <ul>
+        <DevOnlyMenuLi>
+          <GameLink
+            query={{
+              seed,
+              size: boardSize,
+              devOptions: DevOptionsFormat.stringify({
+                ...devOptionsObject,
+                showClosedContent: !devOptionsObject?.showClosedContent,
+              }),
+            }}
+          >
+            Show closed content: {String(!!devOptionsObject?.showClosedContent)}
+          </GameLink>
+        </DevOnlyMenuLi>
       </ul>
 
       <div style={{ marginTop: 20 }}>

@@ -14,8 +14,8 @@
 - [ ] Display mistakes when the game ends. Optionally, show mistakes right when the player makes them.
 - [ ] Option to use replace redirect instead of push redirect, so that the player cannot cheat by going back and changing his move.
 - [ ] Collect anonymous statistics and display them in a publicly available dashboard. E.g.: games started, games finished, average mistakes, average game duration, average board size. Filtering by board size.
-- [ ] (Dev mode) make a button to replay with the same seed and size.
-- [ ] (Dev mode) an option to see content of closed cards
+- [x] (Dev mode) make a button to replay with the same seed and size.
+- [x] (Dev mode) an option to see content of closed cards
 - [ ] (Dev mode) a button to toggle AutoPlay
 - [ ] (Dev mode) ability to stop AutoPlay at any moment without losing its memory
 
