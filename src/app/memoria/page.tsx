@@ -1,27 +1,9 @@
 import { Metadata } from 'next';
-import Image from 'next/image';
-import { FaTelegramPlane } from 'react-icons/fa';
-import {
-  FaArrowLeftLong,
-  FaChessBoard,
-  FaCirclePlay,
-  FaFacebookF,
-  FaRepeat,
-  FaShoePrints,
-  FaXTwitter,
-} from 'react-icons/fa6';
-import Link, { LinkProps } from 'next/link';
+import { FaArrowLeftLong, FaChessBoard, FaRepeat, FaShoePrints } from 'react-icons/fa6';
+import Link from 'next/link';
 
-import winModalDropImage from '@/images/memoria_winmodal_drop.svg';
 import { deterministicShuffle } from '@/tools/deterministicShuffle';
 import { generateRandomString } from '@/tools/generateRandomString';
-import { declinationOfNum } from '@/tools/declinationOfNum';
-import { roundToDecimals } from '@/tools/roundToDecimals';
-import { getSharingTwitter } from '@/tools/social-share/sharers/twitter';
-import { getSharingTelegram } from '@/tools/social-share/sharers/telegram';
-import { getSharingFacebook } from '@/tools/social-share/sharers/facebook';
-import { newTab } from '@/tools/linkHelpers';
-import encodeParams from '@/tools/social-share/utils/encodeParams';
 
 import { AutoplayModule } from './components/AutoplayModule/AutoplayModule';
 import { CircleProgressBar } from './components/CircleProgressBar/CircleProgressBar';
@@ -34,7 +16,6 @@ import {
   GameTopButtonsContainer,
   GameContainer,
   GameHeading,
-  ModalContainer,
   MovesStatContainer,
   RestartButtonContainer,
   GameBottomButtonsContainer,
@@ -43,16 +24,14 @@ import {
   PageWrapper,
   ClockStatContainer,
   GameBoardSizeButtonsContainerWithTooltip,
-  WinModalPlayButton,
-  WinModalPLayButtonAndDropContainer,
-  WinModalStatsContainer,
 } from './page.styled';
 import { handleSearchParamMistakes } from './features/mistakes/handlers';
 import { MemoryCard } from './types';
 import { handleSearchParamSeen } from './features/seen/handlers';
-import { WinModalStars } from './features/stars/components/WinModalStars/WinModalStars';
 import { DevOptionsObject, DevOptionsFormat } from './features/devOnlyOptions/utils';
 import { parseSearchParamDevOptions } from './features/devOnlyOptions/handlers';
+import { WinModal } from './components/WinModal';
+import { GameLink } from './components/GameLink';
 
 export const metadata: Metadata = {
   title: texts.title,
@@ -68,7 +47,7 @@ const devConfig = {
   allowSmallestBoardSize: true,
 };
 
-type AllowedSearchParams =
+export type AllowedSearchParams =
   | 'seed'
   | 'size'
   | 'moves'
@@ -79,7 +58,7 @@ type AllowedSearchParams =
   | 'seen'
   | 'mistakes'
   | 'devOptions';
-const searchParamsDefaults: Record<
+export const searchParamsDefaults: Record<
   Extract<AllowedSearchParams, 'size' | 'moves' | 'mistakes'>,
   number
 > = {
@@ -497,139 +476,6 @@ function GameBoardSizeButtons({
   );
 }
 
-function WinModal({
-  hasWon,
-  moves,
-  startedAt,
-  finishedAt,
-  cardCount,
-  actionResetHref,
-  currentMistakes,
-}: {
-  hasWon: boolean;
-  moves: number;
-  startedAt: string | undefined;
-  finishedAt: string | undefined;
-  cardCount: number;
-  actionResetHref: `?${string}`;
-} & Parameters<typeof WinModalStars>[0]) {
-  const secondsPlayed = startedAt ? (Number(finishedAt) - Number(startedAt)) / 1000 : undefined;
-  const secondsPlayedString = secondsPlayed
-    ? ` and ${roundToDecimals(secondsPlayed, 2)} seconds`
-    : '';
-  const secondPerCardString = secondsPlayed
-    ? ` and ${roundToDecimals(secondsPlayed / cardCount, 2)}s`
-    : '';
-
-  return (
-    <ModalContainer data-visible={hasWon} aria-hidden={!hasWon}>
-      <section role="alertdialog" aria-modal>
-        {hasWon && (
-          <>
-            <WinModalStatsContainer>
-              <h2>Grats!</h2>
-              <AnimatedEmojiPartyPooper />
-              <WinModalStars currentMistakes={currentMistakes} />
-              <p>
-                {moves} {declinationOfNum(moves, ['move', 'moves', 'moves'])}
-                {secondsPlayedString} with {cardCount} cards.
-              </p>
-              <p>
-                {"That's"} {roundToDecimals(moves / cardCount, 1)} moves{secondPerCardString} per
-                card.
-              </p>
-              <p>{"Let's go again?"}</p>
-            </WinModalStatsContainer>
-            <WinModalPLayButtonAndDropContainer>
-              {/* TODO is passHref necessary here? Seems to work the same with and without it. Removing legacyBehavior yields an error, but removing passHref does not. */}
-              <GameLink href={actionResetHref} legacyBehavior passHref>
-                <WinModalPlayButton title="Play">
-                  <FaCirclePlay />
-                </WinModalPlayButton>
-              </GameLink>
-              <Image src={winModalDropImage} alt="" height={33} />
-            </WinModalPLayButtonAndDropContainer>
-          </>
-        )}
-      </section>
-
-      <section role="alertdialog" aria-modal>
-        {hasWon && (
-          <WinModalSharingSectionContent
-            moves={moves}
-            cardCount={cardCount}
-            secondsPlayedString={secondsPlayedString}
-          />
-        )}
-      </section>
-    </ModalContainer>
-  );
-}
-
-function WinModalSharingSectionContent({
-  moves,
-  cardCount,
-  secondsPlayedString,
-}: {
-  moves: number;
-  cardCount: number;
-  secondsPlayedString: string;
-}) {
-  function getSharingText(withUrl: boolean) {
-    return `This ${texts.title} game without JS is surprisingly playable${
-      withUrl ? ` — ${sharingUrl}` : ''
-    }. Just won in ${moves} ${declinationOfNum(moves, [
-      'move',
-      'moves',
-      'moves',
-    ])}${secondsPlayedString} with ${cardCount} cards`;
-  }
-
-  const sharingUrl = 'https://games-without-js.ginzburg.art/memoria';
-  const sharingText = getSharingText(false);
-  // const sharingTitle = 'Games without JS';
-
-  const sharingLinks = {
-    facebook: getSharingFacebook({ u: sharingUrl }),
-    // linkedIn: getSharingLinkedIn({ url: sharingUrl, title: sharingTitle, summary: sharingText }),
-    twitter: getSharingTwitter({ text: sharingText, url: sharingUrl, hashtags: ['game', 'nojs'] }),
-    telegram: getSharingTelegram({ text: sharingText, url: sharingUrl }),
-  };
-
-  return (
-    <>
-      <p>Share</p>
-      <Link href={sharingLinks.facebook} {...newTab}>
-        <FaFacebookF />
-      </Link>
-      <Link href={sharingLinks.twitter} {...newTab}>
-        <FaXTwitter />
-      </Link>
-      <Link href={sharingLinks.telegram} {...newTab}>
-        <FaTelegramPlane />
-      </Link>
-    </>
-  );
-}
-
-/** @see https://googlefonts.github.io/noto-emoji-animation/ */
-function AnimatedEmojiPartyPooper() {
-  return (
-    <picture style={{ position: 'absolute', top: 10, right: 10 }}>
-      <source
-        srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.webp"
-        type="image/webp"
-      />
-      <Image
-        src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif"
-        alt="🎉"
-        width={32}
-        height={32}
-      />
-    </picture>
-  );
-}
-
 function DevOnlyMenu({
   seed,
   cards,
@@ -716,42 +562,4 @@ function DevOnlyMenu({
       </div>
     </section>
   );
-}
-
-/** A helper wrapper around `next/link` */
-function GameLink<RouteType>({
-  noFocus,
-  accessKey,
-  href,
-  query,
-  ...rest
-}: (Omit<LinkProps<RouteType>, 'href'> &
-  (
-    | { href?: never; query: Parameters<typeof createGameQuery>[0] }
-    | { href: LinkProps<RouteType>['href']; query?: never }
-  )) & { noFocus?: boolean }): React.JSX.Element {
-  return (
-    <Link
-      href={href ?? createGameQuery(query!)}
-      tabIndex={noFocus ? -1 : undefined}
-      accessKey={noFocus ? undefined : accessKey}
-      scroll={false}
-      {...rest}
-    />
-  );
-}
-
-function createGameQuery(
-  params: Partial<Record<AllowedSearchParams, string | number | undefined>>,
-) {
-  const paramsWithoutDefaults = Object.fromEntries(
-    Object.entries(params).filter(([key, value]) => {
-      const defaultValue =
-        key in searchParamsDefaults
-          ? searchParamsDefaults[key as Extract<AllowedSearchParams, 'size' | 'moves'>]
-          : undefined;
-      return defaultValue === undefined || defaultValue !== value;
-    }),
-  );
-  return `?${encodeParams(paramsWithoutDefaults)}` as const;
 }
