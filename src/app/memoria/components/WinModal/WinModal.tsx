@@ -11,16 +11,15 @@ import { getSharingTelegram } from '@/tools/social-share/sharers/telegram';
 import { getSharingFacebook } from '@/tools/social-share/sharers/facebook';
 import { newTab } from '@/tools/linkHelpers';
 
-import { texts } from '../data/texts';
+import { texts } from '../../data/texts';
 import {
   ModalContainer,
   WinModalPlayButton,
   WinModalPLayButtonAndDropContainer,
   WinModalStatsContainer,
-} from '../page.styled';
-import { WinModalStars } from '../features/stars/components/WinModalStars/WinModalStars';
-
-import { GameLink } from './GameLink';
+} from '../../page.styled';
+import { WinModalStars } from '../../features/stars/components/WinModalStars/WinModalStars';
+import { GameLink } from '../GameLink';
 
 export function WinModal({
   hasWon,
