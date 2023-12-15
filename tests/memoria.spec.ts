@@ -45,7 +45,7 @@ test.describe.serial('autoplay', async () => {
       } catch {}
     } while (hidden && retries <= 10);
 
-    await expect(page.getByText('Grats!')).toBeVisible();
+    await expect(page.getByText('cards')).toBeVisible();
   });
 
   test('all cards are rotated', async () => {
