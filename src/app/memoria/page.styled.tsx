@@ -632,7 +632,6 @@ export const DevOnlyMenuLi = styled.li`
 `;
 
 const winModalWidthPx = 280; // 230 initially. Set to 280 to exactly cover half of the outermost column of cards in 4x4 size.
-const pxInRem = 16;
 
 export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
   position: absolute;
@@ -718,8 +717,8 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
 export const WinModalStatsContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: ${cardsContainerPaddingRem}rem;
-  padding-bottom: ${33 + (cardsContainerPaddingRem / 2) * pxInRem}px;
+  padding: ${cardsContainerPaddingRem / 1.5}rem;
+  padding-bottom: ${cardsContainerPaddingRem / 2}rem;
   background: linear-gradient(#fff, #ddd);
   color: #222;
   border-radius: ${cardBorderRadiusRem * 2}rem;

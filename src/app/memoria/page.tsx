@@ -30,7 +30,7 @@ import { MemoryCard } from './types';
 import { handleSearchParamSeen } from './features/seen/handlers';
 import { DevOptionsObject, DevOptionsFormat } from './features/devOnlyOptions/utils';
 import { parseSearchParamDevOptions } from './features/devOnlyOptions/handlers';
-import { WinModal } from './components/WinModal';
+import { WinModal } from './components/WinModal/WinModal';
 import { GameLink } from './components/GameLink';
 
 export const metadata: Metadata = {

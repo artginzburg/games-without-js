@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { FaTelegramPlane } from 'react-icons/fa';
-import { FaCirclePlay, FaFacebookF, FaXTwitter } from 'react-icons/fa6';
+import { FaCirclePlay, FaClock, FaFacebookF, FaShoePrints, FaXTwitter } from 'react-icons/fa6';
 import Link from 'next/link';
 
 import winModalDropImage from '@/images/memoria_winmodal_drop.svg';
@@ -20,6 +20,15 @@ import {
 } from '../../page.styled';
 import { WinModalStars } from '../../features/stars/components/WinModalStars/WinModalStars';
 import { GameLink } from '../GameLink';
+
+import {
+  StatsEssentialsMainText,
+  StatsEssentialsSupText,
+  WinModalDetailsContainer,
+  WinModalStatsEssentialsContainer,
+  WinModalStatsMovesContainer,
+  WinModalStatsTimeContainer,
+} from './WinModal.styled';
 
 export function WinModal({
   hasWon,
@@ -42,8 +51,24 @@ export function WinModal({
     ? ` and ${roundToDecimals(secondsPlayed, 2)} seconds`
     : '';
   const secondPerCardString = secondsPlayed
-    ? ` and ${roundToDecimals(secondsPlayed / cardCount, 2)}s`
+    ? `${roundToDecimals(secondsPlayed / cardCount, 2)}s per card`
     : '';
+
+  const minutes = secondsPlayed ? secondsPlayed / 60 : undefined;
+  const minutesFloored = Math.floor(minutes ?? 0);
+
+  const secondsRemainder = minutes ? (minutes - minutesFloored) * 60 : undefined;
+
+  const areSecondsPlayedTooSmall = secondsPlayed !== undefined && secondsPlayed < 2;
+
+  const secondsRounded = areSecondsPlayedTooSmall
+    ? roundToDecimals(secondsRemainder ?? 0, 1)
+    : Math.floor(secondsRemainder ?? 0);
+
+  const secondsDisplayed =
+    secondsRounded <= 9 && (!areSecondsPlayedTooSmall || secondsPlayed === 0)
+      ? `0${secondsRounded}`
+      : secondsRounded;
 
   return (
     <ModalContainer data-visible={hasWon} aria-hidden={!hasWon}>
@@ -51,18 +76,38 @@ export function WinModal({
         {hasWon && (
           <>
             <WinModalStatsContainer>
-              <h2>Grats!</h2>
-              <AnimatedEmojiPartyPooper />
               <WinModalStars currentMistakes={currentMistakes} />
-              <p>
-                {moves} {declinationOfNum(moves, ['move', 'moves', 'moves'])}
-                {secondsPlayedString} with {cardCount} cards.
-              </p>
-              <p>
-                {"That's"} {roundToDecimals(moves / cardCount, 1)} moves{secondPerCardString} per
-                card.
-              </p>
-              <p>{"Let's go again?"}</p>
+              <WinModalDetailsContainer>
+                <p>
+                  {currentMistakes === 0
+                    ? 'No mistakes'
+                    : `${currentMistakes} ${declinationOfNum(currentMistakes, [
+                        'mistake',
+                        'mistakes',
+                        'mistakes',
+                      ])}}`}
+                </p>
+                <p>{cardCount} cards</p>
+              </WinModalDetailsContainer>
+              <WinModalStatsEssentialsContainer>
+                <WinModalStatsMovesContainer>
+                  <StatsEssentialsSupText>
+                    {roundToDecimals(moves / cardCount, 1)} per card
+                  </StatsEssentialsSupText>
+                  <StatsEssentialsMainText>
+                    <span>{moves}</span> <FaShoePrints />
+                  </StatsEssentialsMainText>
+                </WinModalStatsMovesContainer>
+                <WinModalStatsTimeContainer>
+                  <StatsEssentialsSupText>{secondPerCardString}</StatsEssentialsSupText>
+                  <StatsEssentialsMainText>
+                    <FaClock />{' '}
+                    <span>
+                      {minutesFloored}:{secondsDisplayed}
+                    </span>
+                  </StatsEssentialsMainText>
+                </WinModalStatsTimeContainer>
+              </WinModalStatsEssentialsContainer>
             </WinModalStatsContainer>
             <WinModalPLayButtonAndDropContainer>
               {/* TODO is passHref necessary here? Seems to work the same with and without it. Removing legacyBehavior yields an error, but removing passHref does not. */}
@@ -132,23 +177,5 @@ function WinModalSharingSectionContent({
         <FaTelegramPlane />
       </Link>
     </>
-  );
-}
-
-/** @see https://googlefonts.github.io/noto-emoji-animation/ */
-function AnimatedEmojiPartyPooper() {
-  return (
-    <picture style={{ position: 'absolute', top: 10, right: 10 }}>
-      <source
-        srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.webp"
-        type="image/webp"
-      />
-      <Image
-        src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f389/512.gif"
-        alt="🎉"
-        width={32}
-        height={32}
-      />
-    </picture>
   );
 }

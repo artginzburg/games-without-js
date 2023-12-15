@@ -5,19 +5,17 @@ import { easings } from '@/tools/easings';
 import { starsConfig } from '../../config';
 
 export const WinModalStarsContainer = styled.p`
-  margin-block: 0.5rem;
   text-align: center;
   font-size: 0; /* To remove the phantom offset of <span> */
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
 
   > span {
     > svg {
       display: inline-block;
-      font-size: 2rem;
+      font-size: 2.5rem;
       animation: star-pop-filled 0.9s ${easings.easeOutBack} backwards;
       animation-delay: inherit;
-      filter: drop-shadow(0 -0.6rem 0.6rem white);
 
       @keyframes star-pop-filled {
         from {
