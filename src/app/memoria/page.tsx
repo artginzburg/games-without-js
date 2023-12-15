@@ -32,6 +32,7 @@ import { DevOptionsObject, DevOptionsFormat } from './features/devOnlyOptions/ut
 import { parseSearchParamDevOptions } from './features/devOnlyOptions/handlers';
 import { WinModal } from './components/WinModal/WinModal';
 import { GameLink } from './components/GameLink';
+import { searchParamsDefaults } from './data/searchParamsDefaults';
 
 export const metadata: Metadata = {
   title: texts.title,
@@ -58,14 +59,6 @@ export type AllowedSearchParams =
   | 'seen'
   | 'mistakes'
   | 'devOptions';
-export const searchParamsDefaults: Record<
-  Extract<AllowedSearchParams, 'size' | 'moves' | 'mistakes'>,
-  number
-> = {
-  size: 4,
-  moves: 0,
-  mistakes: 0,
-};
 
 export default function Memory({
   searchParams,

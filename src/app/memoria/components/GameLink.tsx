@@ -2,7 +2,8 @@ import Link, { LinkProps } from 'next/link';
 
 import encodeParams from '@/tools/social-share/utils/encodeParams';
 
-import { AllowedSearchParams, searchParamsDefaults } from '../page';
+import { AllowedSearchParams } from '../page';
+import { searchParamsDefaults } from '../data/searchParamsDefaults';
 
 /** A helper wrapper around `next/link` */
 
