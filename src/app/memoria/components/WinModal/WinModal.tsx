@@ -85,7 +85,7 @@ export function WinModal({
                         'mistake',
                         'mistakes',
                         'mistakes',
-                      ])}}`}
+                      ])}`}
                 </p>
                 <p>{cardCount} cards</p>
               </WinModalDetailsContainer>
