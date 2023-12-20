@@ -582,20 +582,6 @@ export const CardContainer = styled.div<{
     border-radius: inherit;
   }
 
-  &[data-just-matched='true'],
-  &[data-just-mismatched='true'] {
-    > div {
-      animation: appear 0.25s forwards ${easings.easeOutBack};
-
-      transform: scale(0);
-      @keyframes appear {
-        to {
-          transform: scale(1);
-        }
-      }
-    }
-  }
-
   > div {
     position: absolute;
     inset: 0;
