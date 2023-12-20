@@ -1,6 +1,7 @@
 'use client';
 
 import { useEventListener } from 'usehooks-ts';
+import { memo, useEffect, useRef } from 'react';
 
 import { getElementIndex } from '@/tools/domToolkit';
 
@@ -12,8 +13,9 @@ import {
 } from './autoplayUtils';
 import { getIsAttributeTrue } from './autoplayTools';
 
-/** @todo disconnect observer on unmount */
-export function AutoplayModule() {
+function AutoplayModulePure() {
+  const autoplayObserverRef = useRef<MutationObserver>();
+
   /**
    * Logic:
    * 1. Look at all nodes and store already known ones
@@ -26,7 +28,7 @@ export function AutoplayModule() {
     const grid = getGridElement();
 
     const { knownPairs, nodesToLookAcross } = lookAtAllNodesAndStoreKnownOnes(grid);
-    const autoplayObserver = observeAllNodes();
+    autoplayObserverRef.current = observeAllNodes();
     displayETA(grid);
     clickUnknownNodeOrFinish();
 
@@ -101,7 +103,8 @@ export function AutoplayModule() {
         return;
       }
 
-      autoplayObserver.disconnect();
+      autoplayObserverRef.current?.disconnect();
+      autoplayObserverRef.current = undefined;
       console.info('Autoplay: finished.');
     }
   }
@@ -111,11 +114,27 @@ export function AutoplayModule() {
     (event) => {
       if (event.code !== 'KeyA') return;
 
-      autoplay();
+      if (autoplayObserverRef.current === undefined) {
+        autoplay();
+      } else {
+        autoplayObserverRef.current?.disconnect();
+        autoplayObserverRef.current = undefined; //* To implement pause instead of stop, this line should be commented out in favour of tracking autoplay status separately, and doing an .observe(grid, ...) call if future "resume" method was called.
+        console.info('Autoplay: stopped manually.');
+      }
     },
     undefined,
     true,
   );
 
+  useEffect(
+    () => () => {
+      autoplayObserverRef.current?.disconnect();
+      autoplayObserverRef.current = undefined;
+    },
+    [],
+  );
+
   return null;
 }
+
+export const AutoplayModule = memo(AutoplayModulePure, () => true);
