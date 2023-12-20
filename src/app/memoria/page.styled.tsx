@@ -662,6 +662,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
       flex-direction: row;
       align-items: center;
       column-gap: ${gapBetweenSmallRelatedElementsRem * 2}rem;
+      width: fit-content;
 
       margin-top: ${cardsContainerPaddingRem}rem;
       padding-block: 0.15rem;
@@ -687,7 +688,7 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
         `)}
 
         > svg {
-          font-size: 1.6rem;
+          font-size: 1.2rem;
         }
       }
     }

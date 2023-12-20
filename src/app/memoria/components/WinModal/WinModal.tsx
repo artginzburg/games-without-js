@@ -166,7 +166,7 @@ function WinModalSharingSectionContent({
 
   return (
     <>
-      <p>Share</p>
+      <p>Share?</p>
       <Link href={sharingLinks.facebook} {...newTab}>
         <FaFacebookF />
       </Link>
