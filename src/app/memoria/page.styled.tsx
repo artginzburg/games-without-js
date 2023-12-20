@@ -675,20 +675,19 @@ export const ModalContainer = styled.div<{ 'data-visible': boolean }>`
         font-size: 0; // remove phantom offset
 
         border-radius: 9999px;
-        border: 2px solid #ddd;
+        border: 2px solid transparent;
         padding: 0.6rem;
 
-        transition-property: background-color, color, border-color, transform;
+        transition-property: background-color, color;
         transition-duration: 0.2s;
         ${mobileSafeHoverEffect(css`
-          background-color: #fff;
-          color: #000;
-          border-color: #fff;
-          transform: scale(0.9);
+          outline: none;
+          background-color: #fff2;
+          color: #fff;
         `)}
 
         > svg {
-          font-size: 1.5rem;
+          font-size: 1.6rem;
         }
       }
     }
