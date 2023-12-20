@@ -584,11 +584,6 @@ export const CardContainer = styled.div<{
 
   &[data-just-matched='true'],
   &[data-just-mismatched='true'] {
-    border: 2px solid #222;
-    @media (prefers-color-scheme: dark) {
-      border-color: #ddd;
-    }
-
     > div {
       animation: appear 0.25s forwards ${easings.easeOutBack};
 
