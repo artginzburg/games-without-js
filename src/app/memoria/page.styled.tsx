@@ -81,6 +81,7 @@ export const MovesStatContainer = styled.div<{ 'data-animate': boolean }>`
 
   > div {
     position: relative;
+    font-variant: tabular-nums;
 
     > p:last-child {
       position: absolute;
@@ -122,6 +123,7 @@ export const ClockStatContainer = styled.div<{
   animationTriggerNamePostfix: string;
 }>`
   margin-left: ${restartButtonPaddingForFingersPx / 2}px;
+  font-variant: tabular-nums;
   &::before {
     content: '0:';
   }
